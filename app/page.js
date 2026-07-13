@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const ROLES_COURANTS = [
   "PSE",
