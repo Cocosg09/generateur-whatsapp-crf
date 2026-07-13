@@ -20,6 +20,7 @@ export default function Home() {
   const [lieuPoste, setLieuPoste] = useState("");
   const [contacts, setContacts] = useState("");
   const [intervenants, setIntervenants] = useState([{ role: "PSE", nom: "" }]);
+  const [texteCollé, setTexteCollé] = useState(""); 
   const [vehicule, setVehicule] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
@@ -37,6 +38,50 @@ export default function Home() {
   function removeIntervenant(index) {
     setIntervenants(intervenants.filter((_, i) => i !== index));
   }
+  function extraireHeures(raw) {
+  const match = raw.match(/(\d{2}):(\d{2}).*?(\d{2}):(\d{2})/);
+  return match ? `${match[1]}H - ${match[3]}H` : "";
+}
+
+function trouverRole(texte) {
+  const t = texte.trim().toLowerCase();
+  const trouve = ROLES_COURANTS.find((r) => r.toLowerCase() === t);
+  return trouve || ROLES_COURANTS[0];
+}
+
+function extraireDuTableau() {
+  const lignes = texteCollé
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l !== "");
+
+  const headerIdx = lignes.findIndex((l) =>
+    l.toLowerCase().includes("qualifications")
+  );
+  const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
+
+  const nouveauxIntervenants = [];
+  let horairesTrouvés = "";
+
+  for (let i = 0; i < donnees.length; i += 3) {
+    const role = donnees[i];
+    const nom = donnees[i + 1];
+    const horairesRaw = donnees[i + 2];
+    if (role && nom) {
+      nouveauxIntervenants.push({ role: trouverRole(role), nom });
+      if (!horairesTrouvés && horairesRaw) {
+        horairesTrouvés = extraireHeures(horairesRaw);
+      }
+    }
+  }
+
+  if (nouveauxIntervenants.length > 0) {
+    setIntervenants(nouveauxIntervenants);
+  }
+  if (horairesTrouvés) {
+    setHoraires(horairesTrouvés);
+  }
+}
 
   function genererMessage() {
     const listeIntervenants = intervenants
@@ -123,40 +168,56 @@ Dispo par message privé au besoin :)`;
       </div>
 
       <div className="space-y-2">
-  <p className="font-semibold">Intervenants</p>
-  {intervenants.map((i, idx) => (
-    <div key={idx} className="flex gap-2">
-      <select
-        className="border rounded p-2 w-48"
-        value={i.role}
-        onChange={(e) => updateIntervenant(idx, "role", e.target.value)}
-      >
-        {ROLES_COURANTS.map((r) => (
-          <option key={r} value={r}>
-            {r}
-          </option>
-        ))}
-      </select>
-      <input
-        className="border rounded p-2 flex-1"
-        placeholder="Nom Prénom"
-        value={i.nom}
-        onChange={(e) => updateIntervenant(idx, "nom", e.target.value)}
-      />
-      {intervenants.length > 1 && (
-        <button
-          onClick={() => removeIntervenant(idx)}
-          className="px-3 border rounded"
-        >
-          ✕
-        </button>
-      )}
-    </div>
-  ))}
-  <button onClick={addIntervenant} className="text-sm text-blue-600">
-    + Ajouter un intervenant
+  <p className="font-semibold">Coller le tableau (qualifications/intervenants/horaires)</p>
+  <textarea
+    className="w-full border rounded p-2 h-32 font-mono text-sm"
+    placeholder={"PAPS - Binôme\nQualifications\tIntervenants\tHoraires\tActions\nSecouriste\nLEBON SLOANE\n14/07/2026 12:00 - 14/07/2026 19:00\n..."}
+    value={texteCollé}
+    onChange={(e) => setTexteCollé(e.target.value)}
+  />
+  <button
+    onClick={extraireDuTableau}
+    className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+  >
+    Extraire les intervenants
   </button>
 </div>
+
+      <div className="space-y-2">
+        <p className="font-semibold">Intervenants</p>
+        {intervenants.map((i, idx) => (
+          <div key={idx} className="flex gap-2">
+            <select
+              className="border rounded p-2 w-48"
+              value={i.role}
+              onChange={(e) => updateIntervenant(idx, "role", e.target.value)}
+            >
+              {ROLES_COURANTS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+            <input
+              className="border rounded p-2 flex-1"
+              placeholder="Nom Prénom"
+              value={i.nom}
+              onChange={(e) => updateIntervenant(idx, "nom", e.target.value)}
+            />
+            {intervenants.length > 1 && (
+              <button
+                onClick={() => removeIntervenant(idx)}
+                className="px-3 border rounded"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+        <button onClick={addIntervenant} className="text-sm text-blue-600">
+          + Ajouter un intervenant
+        </button>
+      </div>
 
       <button
         onClick={genererMessage}
