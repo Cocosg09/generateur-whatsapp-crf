@@ -25,8 +25,6 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
 
   const [texteCollé, setTexteCollé] = useState("");
-  const [fichierPdf, setFichierPdf] = useState(null);
-  const [texteBrutDebug, setTexteBrutDebug] = useState("");
 
   function updateIntervenant(index, field, value) {
     const next = [...intervenants];
@@ -87,27 +85,6 @@ export default function Home() {
     }
   }
 
-  async function extraireDuPdf() {
-    if (!fichierPdf) return;
-    const formData = new FormData();
-    formData.append("file", fichierPdf);
-
-    const res = await fetch("/api/parse-pdf", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-
-    if (data.poste) setPoste(data.poste);
-    if (data.horaires) setHoraires(data.horaires);
-    if (data.heureRdv) setHeureRdv(data.heureRdv);
-    if (data.lieuRdv) setLieuRdv(data.lieuRdv);
-    if (data.lieuPoste) setLieuPoste(data.lieuPoste);
-    if (data.contacts) setContacts(data.contacts);
-    if (data.vehicule) setVehicule(data.vehicule);
-    setTexteBrutDebug(data.texteBrut || "");
-  }
-
   function genererMessage() {
     const listeIntervenants = intervenants
       .filter((i) => i.nom.trim() !== "")
@@ -146,21 +123,6 @@ Dispo par message privé au besoin :)`;
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
-
-      <div className="space-y-2">
-        <p className="font-semibold">Ou uploader l&apos;ordre de mission (PDF)</p>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFichierPdf(e.target.files[0])}
-        />
-        <button
-          onClick={extraireDuPdf}
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
-        >
-          Extraire du PDF
-        </button>
-      </div>
 
       <div className="space-y-2">
         <p className="font-semibold">
@@ -284,13 +246,6 @@ Dispo par message privé au besoin :)`;
             {copied ? "Copié ✓" : "Copier le message"}
           </button>
         </div>
-      )}
-
-      {texteBrutDebug && (
-        <details className="text-xs text-gray-500">
-          <summary>Texte brut extrait du PDF (debug)</summary>
-          <pre className="whitespace-pre-wrap">{texteBrutDebug}</pre>
-        </details>
       )}
     </main>
   );
