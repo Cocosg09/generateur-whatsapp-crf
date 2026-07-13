@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 
+const ROLES_COURANTS = [
+  "PSE",
+  "Secouriste",
+  "Équipier secouriste",
+  "Chef de poste",
+  "Chef d'intervention",
+  "Conducteur VL",
+  "Conducteur VPSP",
+];
+
 export default function Home() {
   const [poste, setPoste] = useState("");
   const [horaires, setHoraires] = useState("");
@@ -9,29 +19,29 @@ export default function Home() {
   const [lieuRdv, setLieuRdv] = useState("");
   const [lieuPoste, setLieuPoste] = useState("");
   const [contacts, setContacts] = useState("");
-  const [pse, setPse] = useState([""]);
+  const [intervenants, setIntervenants] = useState([{ role: "PSE", nom: "" }]);
   const [vehicule, setVehicule] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
 
-  function updatePse(index, value) {
-    const next = [...pse];
-    next[index] = value;
-    setPse(next);
+  function updateIntervenant(index, field, value) {
+    const next = [...intervenants];
+    next[index] = { ...next[index], [field]: value };
+    setIntervenants(next);
   }
 
-  function addPse() {
-    setPse([...pse, ""]);
+  function addIntervenant() {
+    setIntervenants([...intervenants, { role: "PSE", nom: "" }]);
   }
 
-  function removePse(index) {
-    setPse(pse.filter((_, i) => i !== index));
+  function removeIntervenant(index) {
+    setIntervenants(intervenants.filter((_, i) => i !== index));
   }
 
   function genererMessage() {
-    const listePse = pse
-      .filter((p) => p.trim() !== "")
-      .map((p) => `•⁠  ⁠PSE : ${p}`)
+    const listeIntervenants = intervenants
+      .filter((i) => i.nom.trim() !== "")
+      .map((i) => `•⁠  ⁠${i.role} : ${i.nom}`)
       .join("\n");
 
     const texte = `Poste ${poste} - ${horaires}
@@ -41,7 +51,7 @@ Lieux du poste: ${lieuPoste}
 Contact sur place : ${contacts}
 
 🚑
-${listePse}
+${listeIntervenants}
 
 Véhicule: ${vehicule}
 
@@ -113,29 +123,40 @@ Dispo par message privé au besoin :)`;
       </div>
 
       <div className="space-y-2">
-        <p className="font-semibold">Liste des PSE</p>
-        {pse.map((p, i) => (
-          <div key={i} className="flex gap-2">
-            <input
-              className="border rounded p-2 flex-1"
-              placeholder="Nom Prénom"
-              value={p}
-              onChange={(e) => updatePse(i, e.target.value)}
-            />
-            {pse.length > 1 && (
-              <button
-                onClick={() => removePse(i)}
-                className="px-3 border rounded"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+  <p className="font-semibold">Intervenants</p>
+  {intervenants.map((i, idx) => (
+    <div key={idx} className="flex gap-2">
+      <select
+        className="border rounded p-2 w-48"
+        value={i.role}
+        onChange={(e) => updateIntervenant(idx, "role", e.target.value)}
+      >
+        {ROLES_COURANTS.map((r) => (
+          <option key={r} value={r}>
+            {r}
+          </option>
         ))}
-        <button onClick={addPse} className="text-sm text-blue-600">
-          + Ajouter un PSE
+      </select>
+      <input
+        className="border rounded p-2 flex-1"
+        placeholder="Nom Prénom"
+        value={i.nom}
+        onChange={(e) => updateIntervenant(idx, "nom", e.target.value)}
+      />
+      {intervenants.length > 1 && (
+        <button
+          onClick={() => removeIntervenant(idx)}
+          className="px-3 border rounded"
+        >
+          ✕
         </button>
-      </div>
+      )}
+    </div>
+  ))}
+  <button onClick={addIntervenant} className="text-sm text-blue-600">
+    + Ajouter un intervenant
+  </button>
+</div>
 
       <button
         onClick={genererMessage}
