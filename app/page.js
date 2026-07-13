@@ -20,10 +20,13 @@ export default function Home() {
   const [lieuPoste, setLieuPoste] = useState("");
   const [contacts, setContacts] = useState("");
   const [intervenants, setIntervenants] = useState([{ role: "PSE", nom: "" }]);
-  const [texteCollé, setTexteCollé] = useState("");
   const [vehicule, setVehicule] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+
+  const [texteCollé, setTexteCollé] = useState("");
+  const [fichierPdf, setFichierPdf] = useState(null);
+  const [texteBrutDebug, setTexteBrutDebug] = useState("");
 
   function updateIntervenant(index, field, value) {
     const next = [...intervenants];
@@ -38,6 +41,7 @@ export default function Home() {
   function removeIntervenant(index) {
     setIntervenants(intervenants.filter((_, i) => i !== index));
   }
+
   function extraireHeures(raw) {
     const match = raw.match(/(\d{2}):(\d{2}).*?(\d{2}):(\d{2})/);
     return match ? `${match[1]}H - ${match[3]}H` : "";
@@ -83,6 +87,27 @@ export default function Home() {
     }
   }
 
+  async function extraireDuPdf() {
+    if (!fichierPdf) return;
+    const formData = new FormData();
+    formData.append("file", fichierPdf);
+
+    const res = await fetch("/api/parse-pdf", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.poste) setPoste(data.poste);
+    if (data.horaires) setHoraires(data.horaires);
+    if (data.heureRdv) setHeureRdv(data.heureRdv);
+    if (data.lieuRdv) setLieuRdv(data.lieuRdv);
+    if (data.lieuPoste) setLieuPoste(data.lieuPoste);
+    if (data.contacts) setContacts(data.contacts);
+    if (data.vehicule) setVehicule(data.vehicule);
+    setTexteBrutDebug(data.texteBrut || "");
+  }
+
   function genererMessage() {
     const listeIntervenants = intervenants
       .filter((i) => i.nom.trim() !== "")
@@ -121,6 +146,41 @@ Dispo par message privé au besoin :)`;
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
+
+      <div className="space-y-2">
+        <p className="font-semibold">Ou uploader l&apos;ordre de mission (PDF)</p>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setFichierPdf(e.target.files[0])}
+        />
+        <button
+          onClick={extraireDuPdf}
+          className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+        >
+          Extraire du PDF
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <p className="font-semibold">
+          Coller le tableau (qualifications/intervenants/horaires)
+        </p>
+        <textarea
+          className="w-full border rounded p-2 h-32 font-mono text-sm"
+          placeholder={
+            "PAPS - Binôme\nQualifications\tIntervenants\tHoraires\tActions\nSecouriste\nLEBON SLOANE\n14/07/2026 12:00 - 14/07/2026 19:00\n..."
+          }
+          value={texteCollé}
+          onChange={(e) => setTexteCollé(e.target.value)}
+        />
+        <button
+          onClick={extraireDuTableau}
+          className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+        >
+          Extraire les intervenants
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <input
@@ -165,22 +225,6 @@ Dispo par message privé au besoin :)`;
           value={vehicule}
           onChange={(e) => setVehicule(e.target.value)}
         />
-      </div>
-
-      <div className="space-y-2">
-        <p className="font-semibold">Coller le tableau (qualifications/intervenants/horaires)</p>
-        <textarea
-          className="w-full border rounded p-2 h-32 font-mono text-sm"
-          placeholder={"PAPS - Binôme\nQualifications\tIntervenants\tHoraires\tActions\nSecouriste\nNOM PRENOM\n14/07/2026 12:00 - 14/07/2026 19:00\n..."}
-          value={texteCollé}
-          onChange={(e) => setTexteCollé(e.target.value)}
-        />
-        <button
-          onClick={extraireDuTableau}
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
-        >
-          Extraire les intervenants
-        </button>
       </div>
 
       <div className="space-y-2">
@@ -240,6 +284,13 @@ Dispo par message privé au besoin :)`;
             {copied ? "Copié ✓" : "Copier le message"}
           </button>
         </div>
+      )}
+
+      {texteBrutDebug && (
+        <details className="text-xs text-gray-500">
+          <summary>Texte brut extrait du PDF (debug)</summary>
+          <pre className="whitespace-pre-wrap">{texteBrutDebug}</pre>
+        </details>
       )}
     </main>
   );
