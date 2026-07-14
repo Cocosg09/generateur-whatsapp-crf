@@ -42,6 +42,14 @@ export default function Home() {
     setPostes((prev) => [...prev, nouveauPoste()]);
   }
 
+  function reinitialiser() {
+    if (confirm("Réinitialiser le formulaire ? Toutes les données saisies seront perdues.")) {
+      setPostes([nouveauPoste()]);
+      setMessage("");
+      setCopied(false);
+    }
+  }
+
   function supprimerPoste(id) {
     setPostes((prev) => prev.filter((p) => p.id !== id));
   }
@@ -171,14 +179,22 @@ Dispo par message privé au besoin :)`;
 
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-8">
-      <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
+      <div className="flex justify-between items-center">
+  <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
+  <button
+    onClick={reinitialiser}
+    className="text-sm text-gray-600 border rounded px-3 py-1"
+  >
+    Réinitialiser
+  </button>
+</div>
 
       {postes.map((p, posteIdx) => (
         <div
-  key={p.id}
-  className="border rounded-lg p-4 space-y-4"
-  style={{ backgroundColor: "#f9fafb", color: "#111827" }}
->
+          key={p.id}
+          className="border rounded-lg p-4 space-y-4"
+          style={{ backgroundColor: "#000000", color: "#f6f9ff" }}
+        >
           <div className="flex justify-between items-center">
             <p className="font-bold">Poste {posteIdx + 1}</p>
             {postes.length > 1 && (
