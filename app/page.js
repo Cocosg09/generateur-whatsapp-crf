@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const ROLES_COURANTS = [
   "PSE",
@@ -136,7 +136,7 @@ export default function Home() {
     );
   }
 
-  function genererMessage() {
+  function construireMessage() {
     const blocsPostes = postes
       .map((p) => {
         const listeIntervenants = p.intervenants
@@ -157,7 +157,7 @@ Véhicule: ${p.vehicule}`;
       })
       .join("\n\n---\n\n");
 
-    const texte = `${blocsPostes}
+    return `${blocsPostes}
 
 ⚠️RAPPEL SUR LES VÉHICULES ⚠️
 Merci de remplir les carnet de bord
@@ -167,8 +167,12 @@ Et de faire le plein si besoin
 
 Merci à tous et bon poste ! 👍
 Dispo par message privé au besoin :)`;
+  }
 
-    setMessage(texte);
+  const apercu = useMemo(() => construireMessage(), [postes]);
+
+  function genererMessage() {
+    setMessage(construireMessage());
     setCopied(false);
   }
 
@@ -180,14 +184,14 @@ Dispo par message privé au besoin :)`;
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-8">
       <div className="flex justify-between items-center">
-  <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
-  <button
-    onClick={reinitialiser}
-    className="text-sm text-gray-600 border rounded px-3 py-1"
-  >
-    Réinitialiser
-  </button>
-</div>
+        <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
+        <button
+          onClick={reinitialiser}
+          className="text-sm text-gray-600 border rounded px-3 py-1"
+        >
+          Réinitialiser
+        </button>
+      </div>
 
       {postes.map((p, posteIdx) => (
         <div
@@ -320,6 +324,16 @@ Dispo par message privé au besoin :)`;
       >
         + Ajouter un autre poste (ex: poste fixe en plus du PAPS)
       </button>
+
+      <div className="space-y-2">
+        <p className="font-semibold text-sm text-gray-600">Aperçu en temps réel</p>
+        <pre
+          className="w-full border rounded p-3 whitespace-pre-wrap text-sm"
+          style={{ backgroundColor: "#f3f4f6", color: "#111827" }}
+        >
+          {apercu}
+        </pre>
+      </div>
 
       <button
         onClick={genererMessage}
