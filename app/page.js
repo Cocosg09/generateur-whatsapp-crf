@@ -325,22 +325,26 @@ Dispo par message privé au besoin :)`;
         + Ajouter un autre poste (ex: poste fixe en plus du PAPS)
       </button>
 
-      <div className="space-y-2">
-        <p className="font-semibold text-sm text-gray-600">Aperçu en temps réel</p>
-        <pre
-          className="w-full border rounded p-3 whitespace-pre-wrap text-sm"
-          style={{ backgroundColor: "#f3f4f6", color: "#111827" }}
-        >
-          {apercu}
-        </pre>
-      </div>
+      {!message && (
+        <div className="space-y-2">
+          <p className="font-semibold text-sm text-gray-600">Aperçu en temps réel</p>
+          <pre
+            className="w-full border rounded p-3 whitespace-pre-wrap text-sm"
+            style={{ backgroundColor: "#f3f4f6", color: "#111827" }}
+          >
+            {apercu}
+          </pre>
+        </div>
+      )}
 
-      <button
-        onClick={genererMessage}
-        className="bg-red-600 text-white px-4 py-2 rounded font-semibold w-full"
-      >
-        Générer le message
-      </button>
+      {!message && (
+        <button
+          onClick={genererMessage}
+          className="bg-red-600 text-white px-4 py-2 rounded font-semibold w-full"
+        >
+          Générer le message
+        </button>
+      )}
 
       {message && (
         <div className="space-y-2">
@@ -354,6 +358,12 @@ Dispo par message privé au besoin :)`;
             className="bg-gray-800 text-white px-4 py-2 rounded"
           >
             {copied ? "Copié ✓" : "Copier le message"}
+          </button>
+          <button
+            onClick={() => setMessage("")}
+            className="text-sm text-gray-600 underline block"
+          >
+            ← Revenir à l'édition / aperçu
           </button>
         </div>
       )}
