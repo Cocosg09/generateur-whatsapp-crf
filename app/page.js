@@ -32,12 +32,19 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
   const [modeles, setModeles] = useState([]);
+  const [historique, setHistorique] = useState([]);
+  const [afficherHistorique, setAfficherHistorique] = useState(false);
 
   useEffect(() => {
     fetch("/api/modeles")
       .then((res) => res.json())
       .then(setModeles)
       .catch(() => setModeles([]));
+
+    fetch("/api/historique")
+      .then((res) => res.json())
+      .then(setHistorique)
+      .catch(() => setHistorique([]));
   }, []);
 
   async function enregistrerModele(p) {
@@ -200,7 +207,7 @@ export default function Home() {
       .map((p) => {
         const listeIntervenants = p.intervenants
           .filter((i) => i.nom.trim() !== "")
-          .map((i) => `•⁠  ⁠${i.role} : ${i.nom}`)
+          .map((i) => `• ${i.role} : ${i.nom}`)
           .join("\n");
 
         return `Poste ${p.poste} - ${p.horaires}
@@ -230,9 +237,52 @@ Dispo par message privé au besoin :)`;
 
   const apercu = useMemo(() => construireMessage(), [postes]);
 
+  async function sauvegarderDansHistorique(texte) {
+    const entree = {
+      id: crypto.randomUUID(),
+      texte,
+      date: new Date().toISOString(),
+    };
+    const res = await fetch("/api/historique", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entree),
+    });
+    const next = await res.json();
+    setHistorique(next);
+  }
+
+  async function supprimerDeLHistorique(id) {
+    if (!confirm("Supprimer ce message de l'historique ?")) return;
+    const res = await fetch("/api/historique", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    const next = await res.json();
+    setHistorique(next);
+  }
+
+  function copierDepuisHistorique(texte) {
+    navigator.clipboard.writeText(texte);
+    alert("Message copié !");
+  }
+
+  function formaterDate(iso) {
+    return new Date(iso).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   function genererMessage() {
-    setMessage(construireMessage());
+    const texte = construireMessage();
+    setMessage(texte);
     setCopied(false);
+    sauvegarderDansHistorique(texte);
   }
 
   function copierMessage() {
@@ -240,17 +290,61 @@ Dispo par message privé au besoin :)`;
     setCopied(true);
   }
 
+  function envoyerWhatsApp() {
+    const texteEncode = encodeURIComponent(message);
+    window.open(`https://api.whatsapp.com/send?text=${texteEncode}`, "_blank");
+  }
+
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
-        <button
-          onClick={reinitialiser}
-          className="text-sm text-gray-600 border rounded px-3 py-1"
-        >
-          Réinitialiser
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setAfficherHistorique(!afficherHistorique)}
+            className="text-sm text-gray-600 border rounded px-3 py-1"
+          >
+            🕓 Historique
+          </button>
+          <button
+            onClick={reinitialiser}
+            className="text-sm text-gray-600 border rounded px-3 py-1"
+          >
+            Réinitialiser
+          </button>
+        </div>
       </div>
+
+      {afficherHistorique && (
+        <div className="border rounded-lg p-4 space-y-3 bg-gray-50" style={{ color: "#111827" }}>
+          <p className="font-bold">Historique des messages générés</p>
+          {historique.length === 0 && (
+            <p className="text-sm text-gray-500">Aucun message généré pour l'instant.</p>
+          )}
+          {historique.map((h) => (
+            <div key={h.id} className="border rounded p-3 bg-white space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">{formaterDate(h.date)}</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => copierDepuisHistorique(h.texte)}
+                    className="text-xs text-blue-600"
+                  >
+                    Copier
+                  </button>
+                  <button
+                    onClick={() => supprimerDeLHistorique(h.id)}
+                    className="text-xs text-red-600"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+              <pre className="whitespace-pre-wrap text-xs">{h.texte}</pre>
+            </div>
+          ))}
+        </div>
+      )}
 
       {postes.map((p, posteIdx) => (
         <div
@@ -272,7 +366,7 @@ Dispo par message privé au besoin :)`;
 
           <div className="flex gap-2 items-center flex-wrap">
             <select
-              className="border rounded p-2 text-white"
+              className="border rounded p-2 text-black"
               defaultValue=""
               onChange={(e) => {
                 if (e.target.value) chargerModele(p.id, e.target.value);
@@ -455,12 +549,20 @@ Dispo par message privé au besoin :)`;
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          <button
-            onClick={copierMessage}
-            className="bg-gray-800 text-white px-4 py-2 rounded"
-          >
-            {copied ? "Copié ✓" : "Copier le message"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={copierMessage}
+              className="bg-gray-800 text-white px-4 py-2 rounded"
+            >
+              {copied ? "Copié ✓" : "Copier le message"}
+            </button>
+            <button
+              onClick={envoyerWhatsApp}
+              className="bg-green-600 text-white px-4 py-2 rounded font-semibold"
+            >
+              📲 Envoyer sur WhatsApp
+            </button>
+          </div>
           <button
             onClick={() => setMessage("")}
             className="text-sm text-gray-600 underline block"
