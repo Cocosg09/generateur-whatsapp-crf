@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 const ROLES_COURANTS = [
   "PSE",
@@ -31,6 +31,65 @@ export default function Home() {
   const [postes, setPostes] = useState([nouveauPoste()]);
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+  const [modeles, setModeles] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/modeles")
+      .then((res) => res.json())
+      .then(setModeles)
+      .catch(() => setModeles([]));
+  }, []);
+
+  async function enregistrerModele(p) {
+    const nom = prompt("Nom du modèle (ex: PAPS Pamiers)");
+    if (!nom) return;
+    const nouveauModele = {
+      id: crypto.randomUUID(),
+      nom,
+      heureRdv: p.heureRdv,
+      lieuRdv: p.lieuRdv,
+      lieuPoste: p.lieuPoste,
+      contacts: p.contacts,
+      vehicule: p.vehicule,
+    };
+    const res = await fetch("/api/modeles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nouveauModele),
+    });
+    const next = await res.json();
+    setModeles(next);
+  }
+
+  function chargerModele(posteId, modeleId) {
+    const m = modeles.find((x) => x.id === modeleId);
+    if (!m) return;
+    setPostes((prev) =>
+      prev.map((p) =>
+        p.id === posteId
+          ? {
+              ...p,
+              heureRdv: m.heureRdv,
+              lieuRdv: m.lieuRdv,
+              lieuPoste: m.lieuPoste,
+              contacts: m.contacts,
+              vehicule: m.vehicule,
+            }
+          : p
+      )
+    );
+  }
+
+  async function supprimerModele(modeleId) {
+    if (!confirm("Supprimer ce modèle ?")) return;
+    const res = await fetch("/api/modeles", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: modeleId }),
+    });
+    const next = await res.json();
+    setModeles(next);
+  }
 
   function updatePoste(id, field, value) {
     setPostes((prev) =>
@@ -211,6 +270,32 @@ Dispo par message privé au besoin :)`;
             )}
           </div>
 
+          <div className="flex gap-2 items-center flex-wrap">
+            <select
+              className="border rounded p-2 text-white"
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) chargerModele(p.id, e.target.value);
+                e.target.value = "";
+              }}
+            >
+              <option value="" disabled>
+                Charger un modèle...
+              </option>
+              {modeles.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nom}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => enregistrerModele(p)}
+              className="text-sm border rounded px-3 py-2"
+            >
+              💾 Enregistrer comme modèle
+            </button>
+          </div>
+
           <div className="space-y-2">
             <p className="font-semibold text-sm">
               Coller le tableau (qualifications/intervenants/horaires)
@@ -278,7 +363,7 @@ Dispo par message privé au besoin :)`;
             {p.intervenants.map((i, idx) => (
               <div key={idx} className="flex gap-2">
                 <select
-                  className="border rounded p-2 w-48"
+                  className="border rounded p-2 w-48 text-black"
                   value={i.role}
                   onChange={(e) =>
                     updateIntervenant(p.id, idx, "role", e.target.value)
@@ -324,6 +409,23 @@ Dispo par message privé au besoin :)`;
       >
         + Ajouter un autre poste (ex: poste fixe en plus du PAPS)
       </button>
+
+      {modeles.length > 0 && (
+        <div className="text-sm space-y-1">
+          <p className="font-semibold text-gray-600">Modèles enregistrés</p>
+          {modeles.map((m) => (
+            <div key={m.id} className="flex justify-between items-center">
+              <span>{m.nom}</span>
+              <button
+                onClick={() => supprimerModele(m.id)}
+                className="text-red-600 text-xs"
+              >
+                Supprimer
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!message && (
         <div className="space-y-2">
