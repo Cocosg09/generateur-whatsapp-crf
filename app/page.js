@@ -174,7 +174,11 @@ Dispo par message privé au besoin :)`;
       <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
 
       {postes.map((p, posteIdx) => (
-        <div key={p.id} className="border rounded-lg p-4 space-y-4 bg-gray-50">
+        <div
+  key={p.id}
+  className="border rounded-lg p-4 space-y-4"
+  style={{ backgroundColor: "#f9fafb", color: "#111827" }}
+>
           <div className="flex justify-between items-center">
             <p className="font-bold">Poste {posteIdx + 1}</p>
             {postes.length > 1 && (
