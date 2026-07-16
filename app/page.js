@@ -8,9 +8,25 @@ const ROLES_COURANTS = [
   "Équipier secouriste",
   "Chef de poste",
   "Chef d'intervention",
-  "Conducteur VL",
-  "Conducteur VPSP",
 ];
+
+function nouveauPoste() {
+  return {
+    id: crypto.randomUUID(),
+    poste: "",
+    horaires: "",
+    heureRdv: "",
+    lieuRdv: "",
+    lieuPoste: "",
+    contacts: "",
+    vehicule: "",
+    materiel: "",
+    intervenants: [
+      { role: "PSE", nom: "", conducteur: false, typeVehicule: "VL" },
+    ],
+    texteCollé: "",
+  };
+}
 
 const styles = {
   page: {
@@ -37,12 +53,6 @@ const styles = {
     fontWeight: 700,
     letterSpacing: "-0.01em",
   },
-  cross: {
-    width: 20,
-    height: 20,
-    position: "relative",
-    flexShrink: 0,
-  },
   headerActions: {
     display: "flex",
     gap: "8px",
@@ -64,13 +74,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "24px",
-  },
-  card: {
-    background: "var(--papier)",
-    border: "1px solid var(--trait)",
-    borderRadius: "var(--radius)",
-    boxShadow: "var(--ombre)",
-    overflow: "hidden",
   },
   posteCard: {
     background: "var(--papier)",
@@ -221,8 +224,24 @@ const styles = {
   },
   intervenantRow: {
     display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "10px",
+    background: "var(--nuage)",
+  },
+  intervenantMainLine: {
+    display: "flex",
     gap: "8px",
     alignItems: "center",
+  },
+  conducteurLine: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "center",
+    fontSize: "13px",
+    paddingLeft: "2px",
   },
   removeBtn: {
     background: "#fff",
@@ -336,21 +355,6 @@ const styles = {
     alignSelf: "flex-start",
   },
 };
-
-function nouveauPoste() {
-  return {
-    id: crypto.randomUUID(),
-    poste: "",
-    horaires: "",
-    heureRdv: "",
-    lieuRdv: "",
-    lieuPoste: "",
-    contacts: "",
-    vehicule: "",
-    intervenants: [{ role: "PSE", nom: "" }],
-    texteCollé: "",
-  };
-}
 
 function Champ({ label, ...props }) {
   return (
@@ -469,7 +473,13 @@ export default function Home() {
     setPostes((prev) =>
       prev.map((p) =>
         p.id === posteId
-          ? { ...p, intervenants: [...p.intervenants, { role: "PSE", nom: "" }] }
+          ? {
+              ...p,
+              intervenants: [
+                ...p.intervenants,
+                { role: "PSE", nom: "", conducteur: false, typeVehicule: "VL" },
+              ],
+            }
           : p
       )
     );
@@ -497,66 +507,80 @@ export default function Home() {
   }
 
   function extraireDuTableau(posteId) {
-  setPostes((prev) =>
-    prev.map((p) => {
-      if (p.id !== posteId) return p;
+    setPostes((prev) =>
+      prev.map((p) => {
+        if (p.id !== posteId) return p;
 
-      const lignes = p.texteCollé
-        .split("\n")
-        .map((l) => l.trim())
-        .filter((l) => l !== "");
+        const lignes = p.texteCollé
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l !== "");
 
-      const headerIdx = lignes.findIndex((l) =>
-        l.toLowerCase().includes("qualifications")
-      );
+        const headerIdx = lignes.findIndex((l) =>
+          l.toLowerCase().includes("qualifications")
+        );
 
-      // Le nom du poste est la ligne juste avant "Qualifications..."
-      // (ex: "PAPS - Binôme"), à condition que ce ne soit pas
-      // la ligne "100%" ou "Public" ou "Secteur par défaut" etc.
-      let nomPoste = "";
-      if (headerIdx > 0) {
-        const candidate = lignes[headerIdx - 1];
-        const aIgnorer = ["public", "privé", "100%", "secteur par défaut"];
-        if (!aIgnorer.includes(candidate.toLowerCase())) {
-          nomPoste = candidate;
-        }
-      }
-
-      const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
-
-      const nouveauxIntervenants = [];
-      let horairesTrouvés = "";
-
-      for (let i = 0; i < donnees.length; i += 3) {
-        const role = donnees[i];
-        const nom = donnees[i + 1];
-        const horairesRaw = donnees[i + 2];
-        if (role && nom) {
-          nouveauxIntervenants.push({ role: trouverRole(role), nom });
-          if (!horairesTrouvés && horairesRaw) {
-            horairesTrouvés = extraireHeures(horairesRaw);
+        let nomPoste = "";
+        if (headerIdx > 0) {
+          const candidate = lignes[headerIdx - 1];
+          const aIgnorer = ["public", "privé", "100%", "secteur par défaut"];
+          if (!aIgnorer.includes(candidate.toLowerCase())) {
+            nomPoste = candidate;
           }
         }
-      }
 
-      return {
-        ...p,
-        poste: nomPoste || p.poste,
-        intervenants:
-          nouveauxIntervenants.length > 0 ? nouveauxIntervenants : p.intervenants,
-        horaires: horairesTrouvés || p.horaires,
-      };
-    })
-  );
-}
+        const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
+
+        const nouveauxIntervenants = [];
+        let horairesTrouvés = "";
+
+        for (let i = 0; i < donnees.length; i += 3) {
+          const role = donnees[i];
+          const nom = donnees[i + 1];
+          const horairesRaw = donnees[i + 2];
+          if (role && nom) {
+            nouveauxIntervenants.push({
+              role: trouverRole(role),
+              nom,
+              conducteur: false,
+              typeVehicule: "VL",
+            });
+            if (!horairesTrouvés && horairesRaw) {
+              horairesTrouvés = extraireHeures(horairesRaw);
+            }
+          }
+        }
+
+        return {
+          ...p,
+          poste: nomPoste || p.poste,
+          intervenants:
+            nouveauxIntervenants.length > 0 ? nouveauxIntervenants : p.intervenants,
+          horaires: horairesTrouvés || p.horaires,
+        };
+      })
+    );
+  }
 
   function construireMessage() {
     const blocsPostes = postes
       .map((p) => {
         const listeIntervenants = p.intervenants
           .filter((i) => i.nom.trim() !== "")
-          .map((i) => `• ${i.role} : ${i.nom}`)
+          .map((i) => {
+            const suffixe = i.conducteur ? ` (Conducteur ${i.typeVehicule})` : "";
+            return `• ${i.role}${suffixe} : ${i.nom}`;
+          })
           .join("\n");
+
+        const materielLignes = p.materiel
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l !== "");
+        const blocMateriel =
+          materielLignes.length > 0
+            ? `\n\n🎒 Matériel à apporter\n${materielLignes.map((l) => `• ${l}`).join("\n")}`
+            : "";
 
         return `Poste ${p.poste} - ${p.horaires}
 
@@ -567,7 +591,7 @@ Contact sur place : ${p.contacts}
 🚑
 ${listeIntervenants}
 
-Véhicule: ${p.vehicule}`;
+Véhicule: ${p.vehicule}${blocMateriel}`;
       })
       .join("\n\n---\n\n");
 
@@ -817,36 +841,60 @@ Dispo par message privé au besoin :)`;
               <p style={styles.sectionLabel}>Intervenants</p>
               {p.intervenants.map((i, idx) => (
                 <div key={idx} style={styles.intervenantRow}>
-                  <select
-                    style={{ ...styles.input, width: "170px", flexShrink: 0 }}
-                    value={i.role}
-                    onChange={(e) =>
-                      updateIntervenant(p.id, idx, "role", e.target.value)
-                    }
-                  >
-                    {ROLES_COURANTS.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    style={styles.input}
-                    placeholder="Nom Prénom"
-                    value={i.nom}
-                    onChange={(e) =>
-                      updateIntervenant(p.id, idx, "nom", e.target.value)
-                    }
-                  />
-                  {p.intervenants.length > 1 && (
-                    <button
-                      style={styles.removeBtn}
-                      onClick={() => removeIntervenant(p.id, idx)}
-                      aria-label="Retirer cet intervenant"
+                  <div style={styles.intervenantMainLine}>
+                    <select
+                      style={{ ...styles.input, width: "170px", flexShrink: 0 }}
+                      value={i.role}
+                      onChange={(e) =>
+                        updateIntervenant(p.id, idx, "role", e.target.value)
+                      }
                     >
-                      ✕
-                    </button>
-                  )}
+                      {ROLES_COURANTS.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      style={styles.input}
+                      placeholder="Nom Prénom"
+                      value={i.nom}
+                      onChange={(e) =>
+                        updateIntervenant(p.id, idx, "nom", e.target.value)
+                      }
+                    />
+                    {p.intervenants.length > 1 && (
+                      <button
+                        style={styles.removeBtn}
+                        onClick={() => removeIntervenant(p.id, idx)}
+                        aria-label="Retirer cet intervenant"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <label style={styles.conducteurLine}>
+                    <input
+                      type="checkbox"
+                      checked={i.conducteur}
+                      onChange={(e) =>
+                        updateIntervenant(p.id, idx, "conducteur", e.target.checked)
+                      }
+                    />
+                    Conducteur
+                    {i.conducteur && (
+                      <select
+                        style={{ ...styles.input, width: "90px", padding: "4px 6px" }}
+                        value={i.typeVehicule}
+                        onChange={(e) =>
+                          updateIntervenant(p.id, idx, "typeVehicule", e.target.value)
+                        }
+                      >
+                        <option value="VL">VL</option>
+                        <option value="VPSP">VPSP</option>
+                      </select>
+                    )}
+                  </label>
                 </div>
               ))}
               <button
@@ -855,6 +903,16 @@ Dispo par message privé au besoin :)`;
               >
                 + Ajouter un intervenant
               </button>
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <p style={styles.sectionLabel}>Matériel à apporter</p>
+              <textarea
+                style={{ ...styles.textarea, height: "72px" }}
+                placeholder={"Un lot par ligne, ex :\nLot O2\nLot PSE1\nDSA"}
+                value={p.materiel}
+                onChange={(e) => updatePoste(p.id, "materiel", e.target.value)}
+              />
             </div>
           </div>
         ))}
