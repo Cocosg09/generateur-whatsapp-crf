@@ -12,6 +12,331 @@ const ROLES_COURANTS = [
   "Conducteur VPSP",
 ];
 
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "var(--nuage)",
+  },
+  header: {
+    background: "var(--rouge)",
+    color: "#fff",
+    padding: "16px 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+  },
+  headerTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    fontSize: "18px",
+    fontWeight: 700,
+    letterSpacing: "-0.01em",
+  },
+  cross: {
+    width: 20,
+    height: 20,
+    position: "relative",
+    flexShrink: 0,
+  },
+  headerActions: {
+    display: "flex",
+    gap: "8px",
+  },
+  ghostBtn: {
+    background: "rgba(255,255,255,0.15)",
+    color: "#fff",
+    border: "1px solid rgba(255,255,255,0.35)",
+    borderRadius: "8px",
+    padding: "6px 12px",
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  main: {
+    maxWidth: "720px",
+    margin: "0 auto",
+    padding: "24px 16px 64px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+  },
+  card: {
+    background: "var(--papier)",
+    border: "1px solid var(--trait)",
+    borderRadius: "var(--radius)",
+    boxShadow: "var(--ombre)",
+    overflow: "hidden",
+  },
+  posteCard: {
+    background: "var(--papier)",
+    border: "1px solid var(--trait)",
+    borderLeft: "4px solid var(--rouge)",
+    borderRadius: "var(--radius)",
+    boxShadow: "var(--ombre)",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "18px",
+  },
+  posteHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  posteTitleWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  badge: {
+    background: "var(--rouge)",
+    color: "#fff",
+    width: 26,
+    height: 26,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "13px",
+    fontWeight: 700,
+    flexShrink: 0,
+  },
+  posteTitle: {
+    fontWeight: 700,
+    fontSize: "15px",
+  },
+  dangerLink: {
+    background: "none",
+    border: "none",
+    color: "var(--rouge)",
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+    padding: 0,
+  },
+  sectionLabel: {
+    fontSize: "12px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    color: "var(--muted)",
+    marginBottom: "8px",
+  },
+  fieldGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  label: {
+    fontSize: "13px",
+    fontWeight: 600,
+    color: "var(--encre)",
+  },
+  input: {
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "9px 10px",
+    fontSize: "14px",
+    background: "#fff",
+    color: "var(--encre)",
+    width: "100%",
+  },
+  textarea: {
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "9px 10px",
+    fontSize: "13px",
+    fontFamily: "ui-monospace, Menlo, monospace",
+    background: "#fff",
+    color: "var(--encre)",
+    width: "100%",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "12px",
+  },
+  fullSpan: {
+    gridColumn: "1 / -1",
+  },
+  btnSecondary: {
+    background: "#fff",
+    border: "1px solid var(--trait)",
+    color: "var(--encre)",
+    borderRadius: "8px",
+    padding: "8px 14px",
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+    alignSelf: "flex-start",
+  },
+  btnDashed: {
+    background: "transparent",
+    border: "2px dashed var(--trait)",
+    color: "var(--muted)",
+    borderRadius: "var(--radius)",
+    padding: "14px",
+    fontSize: "14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    width: "100%",
+  },
+  btnPrimary: {
+    background: "var(--rouge)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    padding: "14px",
+    fontSize: "15px",
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+  },
+  btnWhatsapp: {
+    background: "var(--whatsapp)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    padding: "12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    cursor: "pointer",
+    flex: 1,
+  },
+  btnDark: {
+    background: "var(--encre)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    padding: "12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    cursor: "pointer",
+    flex: 1,
+  },
+  intervenantRow: {
+    display: "flex",
+    gap: "8px",
+    alignItems: "center",
+  },
+  removeBtn: {
+    background: "#fff",
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    width: "36px",
+    height: "36px",
+    cursor: "pointer",
+    color: "var(--muted)",
+    flexShrink: 0,
+  },
+  addLink: {
+    background: "none",
+    border: "none",
+    color: "var(--rouge)",
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+    padding: 0,
+    textAlign: "left",
+  },
+  apercuBox: {
+    background: "var(--nuage)",
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "14px",
+    fontSize: "13px",
+    whiteSpace: "pre-wrap",
+    color: "var(--encre)",
+    margin: 0,
+    fontFamily: "ui-monospace, Menlo, monospace",
+  },
+  panel: {
+    background: "var(--papier)",
+    border: "1px solid var(--trait)",
+    borderRadius: "var(--radius)",
+    boxShadow: "var(--ombre)",
+    padding: "18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  panelTitle: {
+    fontWeight: 700,
+    fontSize: "15px",
+  },
+  histItem: {
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "12px",
+    background: "var(--nuage)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  histTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  histDate: {
+    fontSize: "11px",
+    color: "var(--muted)",
+  },
+  histActions: {
+    display: "flex",
+    gap: "10px",
+  },
+  linkBtn: {
+    background: "none",
+    border: "none",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    padding: 0,
+  },
+  modeleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: "13px",
+  },
+  finalBox: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  finalTextarea: {
+    width: "100%",
+    minHeight: "280px",
+    border: "1px solid var(--trait)",
+    borderRadius: "var(--radius)",
+    padding: "14px",
+    fontSize: "13px",
+    fontFamily: "ui-monospace, Menlo, monospace",
+    background: "#fff",
+    color: "var(--encre)",
+  },
+  actionsRow: {
+    display: "flex",
+    gap: "8px",
+  },
+  backLink: {
+    background: "none",
+    border: "none",
+    color: "var(--muted)",
+    fontSize: "13px",
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+    alignSelf: "flex-start",
+  },
+};
+
 function nouveauPoste() {
   return {
     id: crypto.randomUUID(),
@@ -25,6 +350,15 @@ function nouveauPoste() {
     intervenants: [{ role: "PSE", nom: "" }],
     texteCollé: "",
   };
+}
+
+function Champ({ label, ...props }) {
+  return (
+    <div style={styles.fieldGroup}>
+      <label style={styles.label}>{label}</label>
+      <input style={styles.input} {...props} />
+    </div>
+  );
 }
 
 export default function Home() {
@@ -296,281 +630,277 @@ Dispo par message privé au besoin :)`;
   }
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Générateur de message DPS</h1>
-        <div className="flex gap-2">
+    <div style={styles.page}>
+      <header style={styles.header}>
+        <div style={styles.headerTitle}>
+          <span aria-hidden="true">✚</span>
+          Générateur de message DPS
+        </div>
+        <div style={styles.headerActions}>
           <button
+            style={styles.ghostBtn}
             onClick={() => setAfficherHistorique(!afficherHistorique)}
-            className="text-sm text-gray-600 border rounded px-3 py-1"
           >
-            🕓 Historique
+            Historique
           </button>
-          <button
-            onClick={reinitialiser}
-            className="text-sm text-gray-600 border rounded px-3 py-1"
-          >
+          <button style={styles.ghostBtn} onClick={reinitialiser}>
             Réinitialiser
           </button>
         </div>
-      </div>
+      </header>
 
-      {afficherHistorique && (
-        <div className="border rounded-lg p-4 space-y-3 bg-gray-50" style={{ color: "#111827" }}>
-          <p className="font-bold">Historique des messages générés</p>
-          {historique.length === 0 && (
-            <p className="text-sm text-gray-500">Aucun message généré pour l'instant.</p>
-          )}
-          {historique.map((h) => (
-            <div key={h.id} className="border rounded p-3 bg-white space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">{formaterDate(h.date)}</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => copierDepuisHistorique(h.texte)}
-                    className="text-xs text-blue-600"
-                  >
-                    Copier
-                  </button>
-                  <button
-                    onClick={() => supprimerDeLHistorique(h.id)}
-                    className="text-xs text-red-600"
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-              <pre className="whitespace-pre-wrap text-xs">{h.texte}</pre>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {postes.map((p, posteIdx) => (
-        <div
-          key={p.id}
-          className="border rounded-lg p-4 space-y-4"
-          style={{ backgroundColor: "#000000", color: "#f6f9ff" }}
-        >
-          <div className="flex justify-between items-center">
-            <p className="font-bold">Poste {posteIdx + 1}</p>
-            {postes.length > 1 && (
-              <button
-                onClick={() => supprimerPoste(p.id)}
-                className="text-sm text-red-600"
-              >
-                Supprimer ce poste
-              </button>
+      <main style={styles.main}>
+        {afficherHistorique && (
+          <section style={styles.panel}>
+            <p style={styles.panelTitle}>Historique des messages générés</p>
+            {historique.length === 0 && (
+              <p style={{ fontSize: "13px", color: "var(--muted)" }}>
+                Aucun message généré pour l'instant.
+              </p>
             )}
-          </div>
-
-          <div className="flex gap-2 items-center flex-wrap">
-            <select
-              className="border rounded p-2 text-black"
-              defaultValue=""
-              onChange={(e) => {
-                if (e.target.value) chargerModele(p.id, e.target.value);
-                e.target.value = "";
-              }}
-            >
-              <option value="" disabled>
-                Charger un modèle...
-              </option>
-              {modeles.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nom}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => enregistrerModele(p)}
-              className="text-sm border rounded px-3 py-2"
-            >
-              💾 Enregistrer comme modèle
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            <p className="font-semibold text-sm">
-              Coller le tableau (qualifications/intervenants/horaires)
-            </p>
-            <textarea
-              className="w-full border rounded p-2 h-24 font-mono text-sm"
-              value={p.texteCollé}
-              onChange={(e) => updatePoste(p.id, "texteCollé", e.target.value)}
-            />
-            <button
-              onClick={() => extraireDuTableau(p.id)}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm"
-            >
-              Extraire les intervenants
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              className="border rounded p-2"
-              placeholder="Nom du poste (ex: 14 Juillet - PAPS)"
-              value={p.poste}
-              onChange={(e) => updatePoste(p.id, "poste", e.target.value)}
-            />
-            <input
-              className="border rounded p-2"
-              placeholder="Horaires (ex: 12H - 19H)"
-              value={p.horaires}
-              onChange={(e) => updatePoste(p.id, "horaires", e.target.value)}
-            />
-            <input
-              className="border rounded p-2"
-              placeholder="Heure de RDV (ex: 11h30)"
-              value={p.heureRdv}
-              onChange={(e) => updatePoste(p.id, "heureRdv", e.target.value)}
-            />
-            <input
-              className="border rounded p-2"
-              placeholder="Lieu de RDV"
-              value={p.lieuRdv}
-              onChange={(e) => updatePoste(p.id, "lieuRdv", e.target.value)}
-            />
-            <input
-              className="border rounded p-2 col-span-2"
-              placeholder="Lieu du poste (adresse)"
-              value={p.lieuPoste}
-              onChange={(e) => updatePoste(p.id, "lieuPoste", e.target.value)}
-            />
-            <input
-              className="border rounded p-2 col-span-2"
-              placeholder="Contact(s) sur place"
-              value={p.contacts}
-              onChange={(e) => updatePoste(p.id, "contacts", e.target.value)}
-            />
-            <input
-              className="border rounded p-2 col-span-2"
-              placeholder="Véhicule"
-              value={p.vehicule}
-              onChange={(e) => updatePoste(p.id, "vehicule", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <p className="font-semibold text-sm">Intervenants</p>
-            {p.intervenants.map((i, idx) => (
-              <div key={idx} className="flex gap-2">
-                <select
-                  className="border rounded p-2 w-48 text-black"
-                  value={i.role}
-                  onChange={(e) =>
-                    updateIntervenant(p.id, idx, "role", e.target.value)
-                  }
-                >
-                  {ROLES_COURANTS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className="border rounded p-2 flex-1"
-                  placeholder="Nom Prénom"
-                  value={i.nom}
-                  onChange={(e) =>
-                    updateIntervenant(p.id, idx, "nom", e.target.value)
-                  }
-                />
-                {p.intervenants.length > 1 && (
-                  <button
-                    onClick={() => removeIntervenant(p.id, idx)}
-                    className="px-3 border rounded"
-                  >
-                    ✕
-                  </button>
-                )}
+            {historique.map((h) => (
+              <div key={h.id} style={styles.histItem}>
+                <div style={styles.histTop}>
+                  <span style={styles.histDate}>{formaterDate(h.date)}</span>
+                  <div style={styles.histActions}>
+                    <button
+                      style={{ ...styles.linkBtn, color: "var(--rouge)" }}
+                      onClick={() => copierDepuisHistorique(h.texte)}
+                    >
+                      Copier
+                    </button>
+                    <button
+                      style={{ ...styles.linkBtn, color: "var(--muted)" }}
+                      onClick={() => supprimerDeLHistorique(h.id)}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+                <pre style={{ ...styles.apercuBox, fontSize: "12px" }}>
+                  {h.texte}
+                </pre>
               </div>
             ))}
-            <button
-              onClick={() => addIntervenant(p.id)}
-              className="text-sm text-blue-600"
-            >
-              + Ajouter un intervenant
-            </button>
-          </div>
-        </div>
-      ))}
+          </section>
+        )}
 
-      <button
-        onClick={ajouterPoste}
-        className="border-2 border-dashed border-gray-400 text-gray-600 px-4 py-2 rounded w-full"
-      >
-        + Ajouter un autre poste (ex: poste fixe en plus du PAPS)
-      </button>
+        {postes.map((p, posteIdx) => (
+          <div key={p.id} style={styles.posteCard}>
+            <div style={styles.posteHeader}>
+              <div style={styles.posteTitleWrap}>
+                <span style={styles.badge}>{posteIdx + 1}</span>
+                <span style={styles.posteTitle}>Poste {posteIdx + 1}</span>
+              </div>
+              {postes.length > 1 && (
+                <button
+                  style={styles.dangerLink}
+                  onClick={() => supprimerPoste(p.id)}
+                >
+                  Supprimer ce poste
+                </button>
+              )}
+            </div>
 
-      {modeles.length > 0 && (
-        <div className="text-sm space-y-1">
-          <p className="font-semibold text-gray-600">Modèles enregistrés</p>
-          {modeles.map((m) => (
-            <div key={m.id} className="flex justify-between items-center">
-              <span>{m.nom}</span>
-              <button
-                onClick={() => supprimerModele(m.id)}
-                className="text-red-600 text-xs"
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <select
+                style={{ ...styles.input, width: "auto" }}
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) chargerModele(p.id, e.target.value);
+                  e.target.value = "";
+                }}
               >
-                Supprimer
+                <option value="" disabled>
+                  Charger un modèle...
+                </option>
+                {modeles.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nom}
+                  </option>
+                ))}
+              </select>
+              <button
+                style={styles.btnSecondary}
+                onClick={() => enregistrerModele(p)}
+              >
+                Enregistrer comme modèle
               </button>
             </div>
-          ))}
-        </div>
-      )}
 
-      {!message && (
-        <div className="space-y-2">
-          <p className="font-semibold text-sm text-gray-600">Aperçu en temps réel</p>
-          <pre
-            className="w-full border rounded p-3 whitespace-pre-wrap text-sm"
-            style={{ backgroundColor: "#f3f4f6", color: "#111827" }}
-          >
-            {apercu}
-          </pre>
-        </div>
-      )}
+            <div style={styles.fieldGroup}>
+              <p style={styles.sectionLabel}>
+                Tableau collé (qualifications / intervenants / horaires)
+              </p>
+              <textarea
+                style={{ ...styles.textarea, height: "96px" }}
+                value={p.texteCollé}
+                onChange={(e) => updatePoste(p.id, "texteCollé", e.target.value)}
+                placeholder={"Qualifications\tIntervenants\tHoraires\n..."}
+              />
+              <button
+                style={{ ...styles.btnSecondary, marginTop: "4px" }}
+                onClick={() => extraireDuTableau(p.id)}
+              >
+                Extraire les intervenants
+              </button>
+            </div>
 
-      {!message && (
-        <button
-          onClick={genererMessage}
-          className="bg-red-600 text-white px-4 py-2 rounded font-semibold w-full"
-        >
-          Générer le message
-        </button>
-      )}
+            <div style={styles.grid2}>
+              <Champ
+                label="Nom du poste"
+                placeholder="ex : 14 Juillet - PAPS"
+                value={p.poste}
+                onChange={(e) => updatePoste(p.id, "poste", e.target.value)}
+              />
+              <Champ
+                label="Horaires"
+                placeholder="ex : 12H - 19H"
+                value={p.horaires}
+                onChange={(e) => updatePoste(p.id, "horaires", e.target.value)}
+              />
+              <Champ
+                label="Heure de RDV"
+                placeholder="ex : 11h30"
+                value={p.heureRdv}
+                onChange={(e) => updatePoste(p.id, "heureRdv", e.target.value)}
+              />
+              <Champ
+                label="Lieu de RDV"
+                placeholder="ex : Nouveau PÔLE"
+                value={p.lieuRdv}
+                onChange={(e) => updatePoste(p.id, "lieuRdv", e.target.value)}
+              />
+              <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
+                <label style={styles.label}>Lieu du poste (adresse)</label>
+                <input
+                  style={styles.input}
+                  value={p.lieuPoste}
+                  onChange={(e) => updatePoste(p.id, "lieuPoste", e.target.value)}
+                />
+              </div>
+              <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
+                <label style={styles.label}>Contact(s) sur place</label>
+                <input
+                  style={styles.input}
+                  placeholder="Nom (06...) et Nom (06...)"
+                  value={p.contacts}
+                  onChange={(e) => updatePoste(p.id, "contacts", e.target.value)}
+                />
+              </div>
+              <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
+                <label style={styles.label}>Véhicule</label>
+                <input
+                  style={styles.input}
+                  placeholder="ex : Liaison RIFTER + sur place VPSP2"
+                  value={p.vehicule}
+                  onChange={(e) => updatePoste(p.id, "vehicule", e.target.value)}
+                />
+              </div>
+            </div>
 
-      {message && (
-        <div className="space-y-2">
-          <textarea
-            className="w-full border rounded p-3 h-72 font-mono text-sm"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={copierMessage}
-              className="bg-gray-800 text-white px-4 py-2 rounded"
-            >
-              {copied ? "Copié ✓" : "Copier le message"}
-            </button>
-            <button
-              onClick={envoyerWhatsApp}
-              className="bg-green-600 text-white px-4 py-2 rounded font-semibold"
-            >
-              📲 Envoyer sur WhatsApp
-            </button>
+            <div style={styles.fieldGroup}>
+              <p style={styles.sectionLabel}>Intervenants</p>
+              {p.intervenants.map((i, idx) => (
+                <div key={idx} style={styles.intervenantRow}>
+                  <select
+                    style={{ ...styles.input, width: "170px", flexShrink: 0 }}
+                    value={i.role}
+                    onChange={(e) =>
+                      updateIntervenant(p.id, idx, "role", e.target.value)
+                    }
+                  >
+                    {ROLES_COURANTS.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    style={styles.input}
+                    placeholder="Nom Prénom"
+                    value={i.nom}
+                    onChange={(e) =>
+                      updateIntervenant(p.id, idx, "nom", e.target.value)
+                    }
+                  />
+                  {p.intervenants.length > 1 && (
+                    <button
+                      style={styles.removeBtn}
+                      onClick={() => removeIntervenant(p.id, idx)}
+                      aria-label="Retirer cet intervenant"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                style={styles.addLink}
+                onClick={() => addIntervenant(p.id)}
+              >
+                + Ajouter un intervenant
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setMessage("")}
-            className="text-sm text-gray-600 underline block"
-          >
-            ← Revenir à l'édition / aperçu
+        ))}
+
+        <button style={styles.btnDashed} onClick={ajouterPoste}>
+          + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
+        </button>
+
+        {modeles.length > 0 && (
+          <section style={styles.panel}>
+            <p style={styles.panelTitle}>Modèles enregistrés</p>
+            {modeles.map((m) => (
+              <div key={m.id} style={styles.modeleRow}>
+                <span>{m.nom}</span>
+                <button
+                  style={{ ...styles.linkBtn, color: "var(--rouge)" }}
+                  onClick={() => supprimerModele(m.id)}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {!message && (
+          <section style={styles.fieldGroup}>
+            <p style={styles.sectionLabel}>Aperçu en temps réel</p>
+            <pre style={styles.apercuBox}>{apercu}</pre>
+          </section>
+        )}
+
+        {!message && (
+          <button style={styles.btnPrimary} onClick={genererMessage}>
+            Générer le message
           </button>
-        </div>
-      )}
-    </main>
+        )}
+
+        {message && (
+          <section style={styles.finalBox}>
+            <p style={styles.sectionLabel}>Message final</p>
+            <textarea
+              style={styles.finalTextarea}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <div style={styles.actionsRow}>
+              <button style={styles.btnDark} onClick={copierMessage}>
+                {copied ? "Copié ✓" : "Copier le message"}
+              </button>
+              <button style={styles.btnWhatsapp} onClick={envoyerWhatsApp}>
+                Envoyer sur WhatsApp
+              </button>
+            </div>
+            <button style={styles.backLink} onClick={() => setMessage("")}>
+              ← Revenir à l'édition / aperçu
+            </button>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }
