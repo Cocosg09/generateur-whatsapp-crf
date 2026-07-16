@@ -497,44 +497,58 @@ export default function Home() {
   }
 
   function extraireDuTableau(posteId) {
-    setPostes((prev) =>
-      prev.map((p) => {
-        if (p.id !== posteId) return p;
+  setPostes((prev) =>
+    prev.map((p) => {
+      if (p.id !== posteId) return p;
 
-        const lignes = p.texteCollé
-          .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => l !== "");
+      const lignes = p.texteCollé
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l !== "");
 
-        const headerIdx = lignes.findIndex((l) =>
-          l.toLowerCase().includes("qualifications")
-        );
-        const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
+      const headerIdx = lignes.findIndex((l) =>
+        l.toLowerCase().includes("qualifications")
+      );
 
-        const nouveauxIntervenants = [];
-        let horairesTrouvés = "";
+      // Le nom du poste est la ligne juste avant "Qualifications..."
+      // (ex: "PAPS - Binôme"), à condition que ce ne soit pas
+      // la ligne "100%" ou "Public" ou "Secteur par défaut" etc.
+      let nomPoste = "";
+      if (headerIdx > 0) {
+        const candidate = lignes[headerIdx - 1];
+        const aIgnorer = ["public", "privé", "100%", "secteur par défaut"];
+        if (!aIgnorer.includes(candidate.toLowerCase())) {
+          nomPoste = candidate;
+        }
+      }
 
-        for (let i = 0; i < donnees.length; i += 3) {
-          const role = donnees[i];
-          const nom = donnees[i + 1];
-          const horairesRaw = donnees[i + 2];
-          if (role && nom) {
-            nouveauxIntervenants.push({ role: trouverRole(role), nom });
-            if (!horairesTrouvés && horairesRaw) {
-              horairesTrouvés = extraireHeures(horairesRaw);
-            }
+      const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
+
+      const nouveauxIntervenants = [];
+      let horairesTrouvés = "";
+
+      for (let i = 0; i < donnees.length; i += 3) {
+        const role = donnees[i];
+        const nom = donnees[i + 1];
+        const horairesRaw = donnees[i + 2];
+        if (role && nom) {
+          nouveauxIntervenants.push({ role: trouverRole(role), nom });
+          if (!horairesTrouvés && horairesRaw) {
+            horairesTrouvés = extraireHeures(horairesRaw);
           }
         }
+      }
 
-        return {
-          ...p,
-          intervenants:
-            nouveauxIntervenants.length > 0 ? nouveauxIntervenants : p.intervenants,
-          horaires: horairesTrouvés || p.horaires,
-        };
-      })
-    );
-  }
+      return {
+        ...p,
+        poste: nomPoste || p.poste,
+        intervenants:
+          nouveauxIntervenants.length > 0 ? nouveauxIntervenants : p.intervenants,
+        horaires: horairesTrouvés || p.horaires,
+      };
+    })
+  );
+}
 
   function construireMessage() {
     const blocsPostes = postes
