@@ -8,6 +8,7 @@ const ROLES_COURANTS = [
   "Équipier secouriste",
   "Chef de poste",
   "Chef d'intervention",
+  "Conducteur VPSP",
 ];
 
 function nouveauPoste() {
