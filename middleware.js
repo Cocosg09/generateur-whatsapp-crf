@@ -1,21 +1,10 @@
 import { NextResponse } from "next/server";
 
-// Comparaison en temps constant sans dépendre de node:crypto/Buffer :
-// le Middleware s'exécute sur le runtime Edge de Vercel, qui n'expose pas ces API Node.
-function correspondEnTempsConstant(a, b) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return diff === 0;
-}
-
 export function middleware(request) {
   const cookie = request.cookies.get("auth");
   const expected = process.env.APP_PASSWORD;
 
-  if (expected && cookie?.value && correspondEnTempsConstant(cookie.value, expected)) {
+  if (expected && cookie?.value === expected) {
     return NextResponse.next();
   }
 
