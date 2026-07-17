@@ -1,10 +1,18 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
-export function middleware(request) {
+function correspondEnTempsConstant(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
+export function proxy(request) {
   const cookie = request.cookies.get("auth");
   const expected = process.env.APP_PASSWORD;
 
-  if (expected && cookie?.value === expected) {
+  if (expected && cookie?.value && correspondEnTempsConstant(cookie.value, expected)) {
     return NextResponse.next();
   }
 
