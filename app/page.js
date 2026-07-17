@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 const ROLES_COURANTS = [
   "PSE",
@@ -181,17 +181,6 @@ const styles = {
     cursor: "pointer",
     width: "100%",
   },
-  btnPrimary: {
-    background: "var(--rouge)",
-    color: "#fff",
-    border: "none",
-    borderRadius: "10px",
-    padding: "14px",
-    fontSize: "15px",
-    fontWeight: 700,
-    cursor: "pointer",
-    width: "100%",
-  },
   btnWhatsapp: {
     background: "var(--whatsapp)",
     color: "#fff",
@@ -329,16 +318,6 @@ const styles = {
     color: "var(--encre)",
   },
   actionsRow: { display: "flex", gap: "8px", flexWrap: "wrap" },
-  backLink: {
-    background: "none",
-    border: "none",
-    color: "var(--muted)",
-    fontSize: "13px",
-    textDecoration: "underline",
-    cursor: "pointer",
-    padding: 0,
-    alignSelf: "flex-start",
-  },
   previewBox: {
     border: "1px dashed var(--rouge)",
     borderRadius: "8px",
@@ -354,6 +333,16 @@ const styles = {
     padding: "8px 10px",
     fontSize: "13px",
     width: "100%",
+  },
+  syncBanner: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "#fff8e1",
+    border: "1px solid #f0c14b",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    fontSize: "13px",
   },
 };
 
@@ -378,18 +367,6 @@ function formaterDate(iso) {
   });
 }
 
-function champsManquants(p) {
-  const manquants = [];
-  if (!p.poste.trim()) manquants.push("Nom du poste");
-  if (!p.horaires.trim()) manquants.push("Horaires");
-  if (!p.lieuPoste.trim()) manquants.push("Lieu du poste");
-  if (!p.contacts.trim()) manquants.push("Contact sur place");
-  if (!p.vehicule.trim()) manquants.push("Véhicule");
-  if (p.intervenants.filter((i) => i.nom.trim()).length === 0)
-    manquants.push("Au moins un intervenant");
-  return manquants;
-}
-
 export default function Home() {
   const [postes, setPostes] = useState([nouveauPoste()]);
   const [message, setMessage] = useState("");
@@ -400,6 +377,10 @@ export default function Home() {
   const [preview, setPreview] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [rechercheHistorique, setRechercheHistorique] = useState("");
+  const [desynchronise, setDesynchronise] = useState(false);
+
+  const lastSyncedRef = useRef("");
+  const dernierEnregistreRef = useRef("");
 
   useEffect(() => {
     fetch("/api/modeles")
@@ -509,6 +490,8 @@ export default function Home() {
       setCopied(false);
       setSubmitAttempted(false);
       setPreview({});
+      setDesynchronise(false);
+      lastSyncedRef.current = "";
     }
   }
 
@@ -689,10 +672,31 @@ Dispo par message privé au besoin :)`;
 
   const apercu = useMemo(() => construireMessage(), [postes]);
 
-  async function sauvegarderDansHistorique(texte) {
+  // Synchronise automatiquement le message avec le formulaire,
+  // sauf si l'utilisateur a modifié le texte à la main.
+  useEffect(() => {
+    setMessage((prev) => {
+      if (prev === lastSyncedRef.current) {
+        lastSyncedRef.current = apercu;
+        return apercu;
+      }
+      setDesynchronise(true);
+      return prev;
+    });
+  }, [apercu]);
+
+  function resynchroniser() {
+    setMessage(apercu);
+    lastSyncedRef.current = apercu;
+    setDesynchronise(false);
+  }
+
+  async function sauvegarderDansHistoriqueSiNecessaire() {
+    if (message === dernierEnregistreRef.current) return;
+    dernierEnregistreRef.current = message;
     const entree = {
       id: crypto.randomUUID(),
-      texte,
+      texte: message,
       date: new Date().toISOString(),
     };
     const res = await fetch("/api/historique", {
@@ -776,30 +780,28 @@ Dispo par message privé au besoin :)`;
     });
 
     setPostes(postesParsed);
-    setMessage("");
+    setDesynchronise(false);
     setSubmitAttempted(false);
     setAfficherHistorique(false);
   }
 
-  function genererMessage() {
-    setSubmitAttempted(true);
-    const texte = construireMessage();
-    setMessage(texte);
-    setCopied(false);
-    sauvegarderDansHistorique(texte);
-  }
-
   function copierMessage() {
+    setSubmitAttempted(true);
     navigator.clipboard.writeText(message);
     setCopied(true);
+    sauvegarderDansHistoriqueSiNecessaire();
   }
 
   function envoyerWhatsApp() {
+    setSubmitAttempted(true);
     const texteEncode = encodeURIComponent(message);
     window.open(`https://api.whatsapp.com/send?text=${texteEncode}`, "_blank");
+    sauvegarderDansHistoriqueSiNecessaire();
   }
 
   function imprimer() {
+    setSubmitAttempted(true);
+    sauvegarderDansHistoriqueSiNecessaire();
     window.print();
   }
 
@@ -1182,51 +1184,48 @@ Dispo par message privé au besoin :)`;
           </section>
         )}
 
-        {!message && (
-          <section style={styles.fieldGroup} className="no-print">
-            <p style={styles.sectionLabel}>Aperçu en temps réel</p>
-            <pre style={styles.apercuBox}>{apercu}</pre>
-          </section>
-        )}
+        <section style={styles.finalBox} className="print-area">
+          <p style={styles.sectionLabel}>Message (édition en direct)</p>
 
-        {!message && (
-          <button style={styles.btnPrimary} className="no-print" onClick={genererMessage}>
-            Générer le message
-          </button>
-        )}
-
-        {message && (
-          <section style={styles.finalBox} className="print-area">
-            <p style={styles.sectionLabel}>Message final</p>
-            <textarea
-              style={styles.finalTextarea}
-              className="no-print"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <pre style={{ ...styles.apercuBox, display: "none" }} className="print-only">
-              {message}
-            </pre>
-            <div style={styles.actionsRow} className="no-print">
-              <button style={styles.btnDark} onClick={copierMessage}>
-                {copied ? "Copié ✓" : "Copier le message"}
-              </button>
-              <button style={styles.btnWhatsapp} onClick={envoyerWhatsApp}>
-                Envoyer sur WhatsApp
-              </button>
-              <button style={styles.btnOutlinePrint} onClick={imprimer}>
-                Imprimer / Exporter en PDF
+          {desynchronise && (
+            <div style={styles.syncBanner} className="no-print">
+              <span>
+                Vous avez modifié ce texte à la main — il ne se met plus à jour
+                automatiquement avec le formulaire.
+              </span>
+              <button style={styles.linkBtn} onClick={resynchroniser}>
+                Resynchroniser
               </button>
             </div>
-            <button
-              style={styles.backLink}
-              className="no-print"
-              onClick={() => setMessage("")}
-            >
-              ← Revenir à l'édition / aperçu
+          )}
+
+          <textarea
+            style={styles.finalTextarea}
+            className="no-print"
+            value={message}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              setCopied(false);
+            }}
+          />
+          <pre
+            style={{ ...styles.apercuBox, display: "none" }}
+            className="print-only"
+          >
+            {message}
+          </pre>
+          <div style={styles.actionsRow} className="no-print">
+            <button style={styles.btnDark} onClick={copierMessage}>
+              {copied ? "Copié ✓" : "Copier le message"}
             </button>
-          </section>
-        )}
+            <button style={styles.btnWhatsapp} onClick={envoyerWhatsApp}>
+              Envoyer sur WhatsApp
+            </button>
+            <button style={styles.btnOutlinePrint} onClick={imprimer}>
+              Imprimer / Exporter en PDF
+            </button>
+          </div>
+        </section>
       </main>
     </div>
   );
