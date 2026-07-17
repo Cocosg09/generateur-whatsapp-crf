@@ -27,19 +27,19 @@ export default function Home() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [rechercheHistorique, setRechercheHistorique] = useState("");
   const [desynchronise, setDesynchronise] = useState(false);
+  const [dernierApercuSynchronise, setDernierApercuSynchronise] = useState("");
 
-  const lastSyncedRef = useRef("");
   const dernierEnregistreRef = useRef("");
   const brouillonChargeRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/modeles")
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then(setModeles)
       .catch(() => setModeles([]));
 
     fetch("/api/historique")
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then(setHistorique)
       .catch(() => setHistorique([]));
 
@@ -97,7 +97,11 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nouveauModele),
     });
-    setModeles(await res.json());
+    if (res.ok) {
+      setModeles(await res.json());
+    } else {
+      alert("Impossible d'enregistrer le modèle, réessayez plus tard.");
+    }
   }
 
   function chargerModele(posteId, modeleId) {
@@ -126,7 +130,11 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: modeleId }),
     });
-    setModeles(await res.json());
+    if (res.ok) {
+      setModeles(await res.json());
+    } else {
+      alert("Impossible de supprimer le modèle, réessayez plus tard.");
+    }
   }
 
   function updatePoste(id, field, value) {
@@ -178,7 +186,6 @@ export default function Home() {
       setSubmitAttempted(false);
       setPreview({});
       setDesynchronise(false);
-      lastSyncedRef.current = "";
       try {
         localStorage.removeItem(BROUILLON_KEY);
       } catch {
@@ -261,22 +268,19 @@ export default function Home() {
 
   const apercu = useMemo(() => construireMessage(postes), [postes]);
 
-  // Synchronise automatiquement le message avec le formulaire,
-  // sauf si l'utilisateur a modifié le texte à la main.
-  useEffect(() => {
-    setMessage((prev) => {
-      if (prev === lastSyncedRef.current) {
-        lastSyncedRef.current = apercu;
-        return apercu;
-      }
-      setDesynchronise(true);
-      return prev;
-    });
-  }, [apercu]);
+  // Synchronise le message avec le formulaire pendant le rendu (plutôt que
+  // dans un effet, cf. https://react.dev/learn/you-might-not-need-an-effect),
+  // sauf si l'utilisateur a modifié le texte à la main (cf. onChange du
+  // textarea, qui positionne `desynchronise`).
+  if (apercu !== dernierApercuSynchronise) {
+    setDernierApercuSynchronise(apercu);
+    if (!desynchronise) {
+      setMessage(apercu);
+    }
+  }
 
   function resynchroniser() {
     setMessage(apercu);
-    lastSyncedRef.current = apercu;
     setDesynchronise(false);
   }
 
@@ -293,7 +297,9 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entree),
     });
-    setHistorique(await res.json());
+    if (res.ok) {
+      setHistorique(await res.json());
+    }
   }
 
   async function supprimerDeLHistorique(id) {
@@ -303,7 +309,11 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    setHistorique(await res.json());
+    if (res.ok) {
+      setHistorique(await res.json());
+    } else {
+      alert("Impossible de supprimer ce message, réessayez plus tard.");
+    }
   }
 
   function copierDepuisHistorique(texte) {
@@ -345,7 +355,7 @@ export default function Home() {
 
   return (
     <div style={styles.page}>
-      <header style={styles.header} className="no-print">
+      <header style={styles.header} className="no-print dps-header">
         <div style={styles.headerTitle}>
           <span aria-hidden="true">✚</span>
           Générateur de message DPS
@@ -363,61 +373,66 @@ export default function Home() {
         </div>
       </header>
 
-      <main style={styles.main}>
-        {afficherHistorique && (
-          <HistoriquePanel
-            historique={historique}
-            recherche={rechercheHistorique}
-            onRechercheChange={setRechercheHistorique}
-            onCharger={chargerDepuisHistorique}
-            onCopier={copierDepuisHistorique}
-            onSupprimer={supprimerDeLHistorique}
+      <main style={styles.main} className="dps-layout">
+        <div className="form-column">
+          {afficherHistorique && (
+            <HistoriquePanel
+              historique={historique}
+              recherche={rechercheHistorique}
+              onRechercheChange={setRechercheHistorique}
+              onCharger={chargerDepuisHistorique}
+              onCopier={copierDepuisHistorique}
+              onSupprimer={supprimerDeLHistorique}
+            />
+          )}
+
+          {postes.map((p, posteIdx) => (
+            <PosteCard
+              key={p.id}
+              poste={p}
+              index={posteIdx}
+              total={postes.length}
+              modeles={modeles}
+              preview={preview[p.id]}
+              submitAttempted={submitAttempted}
+              onUpdatePoste={updatePoste}
+              onUpdateIntervenant={updateIntervenant}
+              onAddIntervenant={addIntervenant}
+              onRemoveIntervenant={removeIntervenant}
+              onMove={deplacerPoste}
+              onDuplicate={dupliquerPoste}
+              onRemove={supprimerPoste}
+              onChargerModele={chargerModele}
+              onEnregistrerModele={enregistrerModele}
+              onExtraire={extraireDuTableau}
+              onConfirmerExtraction={confirmerExtraction}
+              onAnnulerExtraction={annulerExtraction}
+            />
+          ))}
+
+          <button style={styles.btnDashed} className="no-print" onClick={ajouterPoste}>
+            + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
+          </button>
+
+          <ModelesPanel modeles={modeles} onSupprimer={supprimerModele} />
+        </div>
+
+        <div className="message-column">
+          <MessageEditor
+            message={message}
+            desynchronise={desynchronise}
+            copied={copied}
+            onChange={(value) => {
+              setMessage(value);
+              setCopied(false);
+              setDesynchronise(true);
+            }}
+            onResync={resynchroniser}
+            onCopier={copierMessage}
+            onEnvoyer={envoyerWhatsApp}
+            onImprimer={imprimer}
           />
-        )}
-
-        {postes.map((p, posteIdx) => (
-          <PosteCard
-            key={p.id}
-            poste={p}
-            index={posteIdx}
-            total={postes.length}
-            modeles={modeles}
-            preview={preview[p.id]}
-            submitAttempted={submitAttempted}
-            onUpdatePoste={updatePoste}
-            onUpdateIntervenant={updateIntervenant}
-            onAddIntervenant={addIntervenant}
-            onRemoveIntervenant={removeIntervenant}
-            onMove={deplacerPoste}
-            onDuplicate={dupliquerPoste}
-            onRemove={supprimerPoste}
-            onChargerModele={chargerModele}
-            onEnregistrerModele={enregistrerModele}
-            onExtraire={extraireDuTableau}
-            onConfirmerExtraction={confirmerExtraction}
-            onAnnulerExtraction={annulerExtraction}
-          />
-        ))}
-
-        <button style={styles.btnDashed} className="no-print" onClick={ajouterPoste}>
-          + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
-        </button>
-
-        <ModelesPanel modeles={modeles} onSupprimer={supprimerModele} />
-
-        <MessageEditor
-          message={message}
-          desynchronise={desynchronise}
-          copied={copied}
-          onChange={(value) => {
-            setMessage(value);
-            setCopied(false);
-          }}
-          onResync={resynchroniser}
-          onCopier={copierMessage}
-          onEnvoyer={envoyerWhatsApp}
-          onImprimer={imprimer}
-        />
+        </div>
       </main>
     </div>
   );
