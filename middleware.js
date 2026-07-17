@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // Comparaison en temps constant sans dépendre de node:crypto/Buffer :
-// le Proxy s'exécute sur le runtime Edge de Vercel, qui n'expose pas ces API Node.
+// le Middleware s'exécute sur le runtime Edge de Vercel, qui n'expose pas ces API Node.
 function correspondEnTempsConstant(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -11,7 +11,7 @@ function correspondEnTempsConstant(a, b) {
   return diff === 0;
 }
 
-export function proxy(request) {
+export function middleware(request) {
   const cookie = request.cookies.get("auth");
   const expected = process.env.APP_PASSWORD;
 
