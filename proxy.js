@@ -1,11 +1,14 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
+// Comparaison en temps constant sans dépendre de node:crypto/Buffer :
+// le Proxy s'exécute sur le runtime Edge de Vercel, qui n'expose pas ces API Node.
 function correspondEnTempsConstant(a, b) {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export function proxy(request) {
