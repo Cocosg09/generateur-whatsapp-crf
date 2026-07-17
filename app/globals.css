@@ -37,3 +37,17 @@ button {
 textarea {
   resize: vertical;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  body {
+    background: #fff !important;
+  }
+}

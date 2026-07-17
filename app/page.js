@@ -30,10 +30,7 @@ function nouveauPoste() {
 }
 
 const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "var(--nuage)",
-  },
+  page: { minHeight: "100vh", background: "var(--nuage)" },
   header: {
     background: "var(--rouge)",
     color: "#fff",
@@ -54,10 +51,7 @@ const styles = {
     fontWeight: 700,
     letterSpacing: "-0.01em",
   },
-  headerActions: {
-    display: "flex",
-    gap: "8px",
-  },
+  headerActions: { display: "flex", gap: "8px" },
   ghostBtn: {
     background: "rgba(255,255,255,0.15)",
     color: "#fff",
@@ -91,12 +85,10 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: "8px",
   },
-  posteTitleWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
+  posteTitleWrap: { display: "flex", alignItems: "center", gap: "10px" },
   badge: {
     background: "var(--rouge)",
     color: "#fff",
@@ -110,9 +102,17 @@ const styles = {
     fontWeight: 700,
     flexShrink: 0,
   },
-  posteTitle: {
-    fontWeight: 700,
-    fontSize: "15px",
+  posteTitle: { fontWeight: 700, fontSize: "15px" },
+  posteHeaderActions: { display: "flex", gap: "10px", alignItems: "center" },
+  arrowBtn: {
+    background: "#fff",
+    border: "1px solid var(--trait)",
+    borderRadius: "6px",
+    width: "28px",
+    height: "28px",
+    cursor: "pointer",
+    color: "var(--encre)",
+    fontSize: "13px",
   },
   dangerLink: {
     background: "none",
@@ -131,16 +131,9 @@ const styles = {
     color: "var(--muted)",
     marginBottom: "8px",
   },
-  fieldGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  label: {
-    fontSize: "13px",
-    fontWeight: 600,
-    color: "var(--encre)",
-  },
+  fieldGroup: { display: "flex", flexDirection: "column", gap: "4px" },
+  label: { fontSize: "13px", fontWeight: 600, color: "var(--encre)" },
+  required: { color: "var(--rouge)" },
   input: {
     border: "1px solid var(--trait)",
     borderRadius: "8px",
@@ -149,6 +142,10 @@ const styles = {
     background: "#fff",
     color: "var(--encre)",
     width: "100%",
+  },
+  inputInvalide: {
+    border: "1px solid var(--rouge)",
+    boxShadow: "0 0 0 1px var(--rouge)",
   },
   textarea: {
     border: "1px solid var(--trait)",
@@ -160,14 +157,8 @@ const styles = {
     color: "var(--encre)",
     width: "100%",
   },
-  grid2: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
-  },
-  fullSpan: {
-    gridColumn: "1 / -1",
-  },
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" },
+  fullSpan: { gridColumn: "1 / -1" },
   btnSecondary: {
     background: "#fff",
     border: "1px solid var(--trait)",
@@ -223,6 +214,17 @@ const styles = {
     cursor: "pointer",
     flex: 1,
   },
+  btnOutlinePrint: {
+    background: "#fff",
+    border: "1px solid var(--trait)",
+    color: "var(--encre)",
+    borderRadius: "10px",
+    padding: "12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    cursor: "pointer",
+    flex: 1,
+  },
   intervenantRow: {
     display: "flex",
     flexDirection: "column",
@@ -232,11 +234,7 @@ const styles = {
     padding: "10px",
     background: "var(--nuage)",
   },
-  intervenantMainLine: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-  },
+  intervenantMainLine: { display: "flex", gap: "8px", alignItems: "center" },
   conducteurLine: {
     display: "flex",
     gap: "10px",
@@ -285,10 +283,7 @@ const styles = {
     flexDirection: "column",
     gap: "12px",
   },
-  panelTitle: {
-    fontWeight: 700,
-    fontSize: "15px",
-  },
+  panelTitle: { fontWeight: 700, fontSize: "15px" },
   histItem: {
     border: "1px solid var(--trait)",
     borderRadius: "8px",
@@ -302,15 +297,11 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: "6px",
   },
-  histDate: {
-    fontSize: "11px",
-    color: "var(--muted)",
-  },
-  histActions: {
-    display: "flex",
-    gap: "10px",
-  },
+  histDate: { fontSize: "11px", color: "var(--muted)" },
+  histActions: { display: "flex", gap: "10px" },
   linkBtn: {
     background: "none",
     border: "none",
@@ -325,11 +316,7 @@ const styles = {
     alignItems: "center",
     fontSize: "13px",
   },
-  finalBox: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
+  finalBox: { display: "flex", flexDirection: "column", gap: "10px" },
   finalTextarea: {
     width: "100%",
     minHeight: "280px",
@@ -341,10 +328,7 @@ const styles = {
     background: "#fff",
     color: "var(--encre)",
   },
-  actionsRow: {
-    display: "flex",
-    gap: "8px",
-  },
+  actionsRow: { display: "flex", gap: "8px", flexWrap: "wrap" },
   backLink: {
     background: "none",
     border: "none",
@@ -355,15 +339,55 @@ const styles = {
     padding: 0,
     alignSelf: "flex-start",
   },
+  previewBox: {
+    border: "1px dashed var(--rouge)",
+    borderRadius: "8px",
+    padding: "12px",
+    background: "#fff5f5",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  searchInput: {
+    border: "1px solid var(--trait)",
+    borderRadius: "8px",
+    padding: "8px 10px",
+    fontSize: "13px",
+    width: "100%",
+  },
 };
 
-function Champ({ label, ...props }) {
-  return (
-    <div style={styles.fieldGroup}>
-      <label style={styles.label}>{label}</label>
-      <input style={styles.input} {...props} />
-    </div>
-  );
+function trouverRole(texte) {
+  const t = texte.trim().toLowerCase();
+  const trouve = ROLES_COURANTS.find((r) => r.toLowerCase() === t);
+  return trouve || ROLES_COURANTS[0];
+}
+
+function extraireHeures(raw) {
+  const match = raw.match(/(\d{2}):(\d{2}).*?(\d{2}):(\d{2})/);
+  return match ? `${match[1]}H - ${match[3]}H` : "";
+}
+
+function formaterDate(iso) {
+  return new Date(iso).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function champsManquants(p) {
+  const manquants = [];
+  if (!p.poste.trim()) manquants.push("Nom du poste");
+  if (!p.horaires.trim()) manquants.push("Horaires");
+  if (!p.lieuPoste.trim()) manquants.push("Lieu du poste");
+  if (!p.contacts.trim()) manquants.push("Contact sur place");
+  if (!p.vehicule.trim()) manquants.push("Véhicule");
+  if (p.intervenants.filter((i) => i.nom.trim()).length === 0)
+    manquants.push("Au moins un intervenant");
+  return manquants;
 }
 
 export default function Home() {
@@ -373,6 +397,9 @@ export default function Home() {
   const [modeles, setModeles] = useState([]);
   const [historique, setHistorique] = useState([]);
   const [afficherHistorique, setAfficherHistorique] = useState(false);
+  const [preview, setPreview] = useState({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [rechercheHistorique, setRechercheHistorique] = useState("");
 
   useEffect(() => {
     fetch("/api/modeles")
@@ -403,8 +430,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nouveauModele),
     });
-    const next = await res.json();
-    setModeles(next);
+    setModeles(await res.json());
   }
 
   function chargerModele(posteId, modeleId) {
@@ -433,8 +459,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: modeleId }),
     });
-    const next = await res.json();
-    setModeles(next);
+    setModeles(await res.json());
   }
 
   function updatePoste(id, field, value) {
@@ -447,11 +472,43 @@ export default function Home() {
     setPostes((prev) => [...prev, nouveauPoste()]);
   }
 
+  function dupliquerPoste(posteId) {
+    setPostes((prev) => {
+      const idx = prev.findIndex((p) => p.id === posteId);
+      if (idx === -1) return prev;
+      const copie = {
+        ...prev[idx],
+        id: crypto.randomUUID(),
+        intervenants: prev[idx].intervenants.map((i) => ({ ...i })),
+      };
+      const next = [...prev];
+      next.splice(idx + 1, 0, copie);
+      return next;
+    });
+  }
+
+  function deplacerPoste(posteId, direction) {
+    setPostes((prev) => {
+      const idx = prev.findIndex((p) => p.id === posteId);
+      const cible = idx + direction;
+      if (idx === -1 || cible < 0 || cible >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[cible]] = [next[cible], next[idx]];
+      return next;
+    });
+  }
+
   function reinitialiser() {
-    if (confirm("Réinitialiser le formulaire ? Toutes les données saisies seront perdues.")) {
+    if (
+      confirm(
+        "Réinitialiser le formulaire ? Toutes les données saisies seront perdues."
+      )
+    ) {
       setPostes([nouveauPoste()]);
       setMessage("");
       setCopied(false);
+      setSubmitAttempted(false);
+      setPreview({});
     }
   }
 
@@ -496,71 +553,91 @@ export default function Home() {
     );
   }
 
-  function extraireHeures(raw) {
-    const match = raw.match(/(\d{2}):(\d{2}).*?(\d{2}):(\d{2})/);
-    return match ? `${match[1]}H - ${match[3]}H` : "";
-  }
-
-  function trouverRole(texte) {
-    const t = texte.trim().toLowerCase();
-    const trouve = ROLES_COURANTS.find((r) => r.toLowerCase() === t);
-    return trouve || ROLES_COURANTS[0];
-  }
-
   function extraireDuTableau(posteId) {
-    setPostes((prev) =>
-      prev.map((p) => {
-        if (p.id !== posteId) return p;
+    const poste = postes.find((p) => p.id === posteId);
+    if (!poste) return;
 
-        const lignes = p.texteCollé
-          .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => l !== "");
+    const lignes = poste.texteCollé
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l !== "");
 
-        const headerIdx = lignes.findIndex((l) =>
-          l.toLowerCase().includes("qualifications")
-        );
-
-        let nomPoste = "";
-        if (headerIdx > 0) {
-          const candidate = lignes[headerIdx - 1];
-          const aIgnorer = ["public", "privé", "100%", "secteur par défaut"];
-          if (!aIgnorer.includes(candidate.toLowerCase())) {
-            nomPoste = candidate;
-          }
-        }
-
-        const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
-
-        const nouveauxIntervenants = [];
-        let horairesTrouvés = "";
-
-        for (let i = 0; i < donnees.length; i += 3) {
-          const role = donnees[i];
-          const nom = donnees[i + 1];
-          const horairesRaw = donnees[i + 2];
-          if (role && nom) {
-            nouveauxIntervenants.push({
-              role: trouverRole(role),
-              nom,
-              conducteur: false,
-              typeVehicule: "VL",
-            });
-            if (!horairesTrouvés && horairesRaw) {
-              horairesTrouvés = extraireHeures(horairesRaw);
-            }
-          }
-        }
-
-        return {
-          ...p,
-          poste: nomPoste || p.poste,
-          intervenants:
-            nouveauxIntervenants.length > 0 ? nouveauxIntervenants : p.intervenants,
-          horaires: horairesTrouvés || p.horaires,
-        };
-      })
+    const headerIdx = lignes.findIndex((l) =>
+      l.toLowerCase().includes("qualifications")
     );
+
+    let nomPoste = "";
+    if (headerIdx > 0) {
+      const candidate = lignes[headerIdx - 1];
+      const estBruit =
+        /^\d+%$/.test(candidate) ||
+        ["public", "privé", "secteur par défaut"].includes(
+          candidate.toLowerCase()
+        );
+      if (!estBruit) nomPoste = candidate;
+    }
+
+    const donnees = headerIdx !== -1 ? lignes.slice(headerIdx + 1) : lignes;
+
+    const nouveauxIntervenants = [];
+    let horairesTrouvés = "";
+
+    for (let i = 0; i < donnees.length; i += 3) {
+      const role = donnees[i];
+      const nom = donnees[i + 1];
+      const horairesRaw = donnees[i + 2];
+      if (role && nom) {
+        nouveauxIntervenants.push({
+          role: trouverRole(role),
+          nom,
+          conducteur: false,
+          typeVehicule: "VL",
+        });
+        if (!horairesTrouvés && horairesRaw) {
+          horairesTrouvés = extraireHeures(horairesRaw);
+        }
+      }
+    }
+
+    setPreview((prev) => ({
+      ...prev,
+      [posteId]: {
+        poste: nomPoste,
+        horaires: horairesTrouvés,
+        intervenants: nouveauxIntervenants,
+      },
+    }));
+  }
+
+  function confirmerExtraction(posteId) {
+    const p = preview[posteId];
+    if (!p) return;
+    setPostes((prev) =>
+      prev.map((x) =>
+        x.id === posteId
+          ? {
+              ...x,
+              poste: p.poste || x.poste,
+              horaires: p.horaires || x.horaires,
+              intervenants:
+                p.intervenants.length > 0 ? p.intervenants : x.intervenants,
+            }
+          : x
+      )
+    );
+    setPreview((prev) => {
+      const next = { ...prev };
+      delete next[posteId];
+      return next;
+    });
+  }
+
+  function annulerExtraction(posteId) {
+    setPreview((prev) => {
+      const next = { ...prev };
+      delete next[posteId];
+      return next;
+    });
   }
 
   function construireMessage() {
@@ -580,7 +657,9 @@ export default function Home() {
           .filter((l) => l !== "");
         const blocMateriel =
           materielLignes.length > 0
-            ? `\n\n🎒 Matériel à apporter\n${materielLignes.map((l) => `• ${l}`).join("\n")}`
+            ? `\n\n🎒 Matériel à apporter\n${materielLignes
+                .map((l) => `• ${l}`)
+                .join("\n")}`
             : "";
 
         return `Poste ${p.poste} - ${p.horaires}
@@ -621,8 +700,7 @@ Dispo par message privé au besoin :)`;
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entree),
     });
-    const next = await res.json();
-    setHistorique(next);
+    setHistorique(await res.json());
   }
 
   async function supprimerDeLHistorique(id) {
@@ -632,8 +710,7 @@ Dispo par message privé au besoin :)`;
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    const next = await res.json();
-    setHistorique(next);
+    setHistorique(await res.json());
   }
 
   function copierDepuisHistorique(texte) {
@@ -641,17 +718,71 @@ Dispo par message privé au besoin :)`;
     alert("Message copié !");
   }
 
-  function formaterDate(iso) {
-    return new Date(iso).toLocaleString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+  function chargerDepuisHistorique(texte) {
+    if (
+      !confirm(
+        "Remplacer le formulaire actuel par ce message de l'historique ?"
+      )
+    )
+      return;
+
+    const zonePostes = texte.split("\n\n⚠️RAPPEL SUR LES VÉHICULES")[0];
+    const blocs = zonePostes.split("\n\n---\n\n");
+
+    const postesParsed = blocs.map((bloc) => {
+      const posteMatch = bloc.match(/^Poste (.+?) - (.+)$/m);
+      const rdvMatch = bloc.match(/RDV à (.+?) au (.+)$/m);
+      const lieuMatch = bloc.match(/Lieux du poste: (.+)$/m);
+      const contactMatch = bloc.match(/Contact sur place : (.+)$/m);
+      const vehiculeMatch = bloc.match(/Véhicule: (.+)$/m);
+      const materielMatch = bloc.match(/🎒 Matériel à apporter\n([\s\S]+)$/);
+
+      const intervenants = [];
+      const lignesIntervenants = bloc.match(/^• .+$/gm) || [];
+      lignesIntervenants.forEach((ligne) => {
+        const m = ligne.match(/^• (.+?)(?: \(Conducteur (VL|VPSP)\))? : (.+)$/);
+        if (m) {
+          intervenants.push({
+            role: trouverRole(m[1]),
+            nom: m[3],
+            conducteur: !!m[2],
+            typeVehicule: m[2] || "VL",
+          });
+        }
+      });
+
+      return {
+        id: crypto.randomUUID(),
+        poste: posteMatch ? posteMatch[1] : "",
+        horaires: posteMatch ? posteMatch[2] : "",
+        heureRdv: rdvMatch ? rdvMatch[1] : "",
+        lieuRdv: rdvMatch ? rdvMatch[2] : "",
+        lieuPoste: lieuMatch ? lieuMatch[1] : "",
+        contacts: contactMatch ? contactMatch[1] : "",
+        vehicule: vehiculeMatch ? vehiculeMatch[1] : "",
+        materiel: materielMatch
+          ? materielMatch[1]
+              .split("\n")
+              .map((l) => l.replace(/^• /, "").trim())
+              .filter(Boolean)
+              .join("\n")
+          : "",
+        intervenants:
+          intervenants.length > 0
+            ? intervenants
+            : [{ role: "PSE", nom: "", conducteur: false, typeVehicule: "VL" }],
+        texteCollé: "",
+      };
     });
+
+    setPostes(postesParsed);
+    setMessage("");
+    setSubmitAttempted(false);
+    setAfficherHistorique(false);
   }
 
   function genererMessage() {
+    setSubmitAttempted(true);
     const texte = construireMessage();
     setMessage(texte);
     setCopied(false);
@@ -668,9 +799,29 @@ Dispo par message privé au besoin :)`;
     window.open(`https://api.whatsapp.com/send?text=${texteEncode}`, "_blank");
   }
 
+  function imprimer() {
+    window.print();
+  }
+
+  const historiqueFiltre = useMemo(() => {
+    if (!rechercheHistorique.trim()) return historique;
+    const q = rechercheHistorique.toLowerCase();
+    return historique.filter(
+      (h) =>
+        h.texte.toLowerCase().includes(q) ||
+        formaterDate(h.date).toLowerCase().includes(q)
+    );
+  }, [historique, rechercheHistorique]);
+
+  function champStyle(valeur) {
+    return submitAttempted && !valeur.trim()
+      ? { ...styles.input, ...styles.inputInvalide }
+      : styles.input;
+  }
+
   return (
     <div style={styles.page}>
-      <header style={styles.header}>
+      <header style={styles.header} className="no-print">
         <div style={styles.headerTitle}>
           <span aria-hidden="true">✚</span>
           Générateur de message DPS
@@ -690,20 +841,32 @@ Dispo par message privé au besoin :)`;
 
       <main style={styles.main}>
         {afficherHistorique && (
-          <section style={styles.panel}>
+          <section style={styles.panel} className="no-print">
             <p style={styles.panelTitle}>Historique des messages générés</p>
-            {historique.length === 0 && (
+            <input
+              style={styles.searchInput}
+              placeholder="Rechercher par texte ou date..."
+              value={rechercheHistorique}
+              onChange={(e) => setRechercheHistorique(e.target.value)}
+            />
+            {historiqueFiltre.length === 0 && (
               <p style={{ fontSize: "13px", color: "var(--muted)" }}>
-                Aucun message généré pour l'instant.
+                Aucun message trouvé.
               </p>
             )}
-            {historique.map((h) => (
+            {historiqueFiltre.map((h) => (
               <div key={h.id} style={styles.histItem}>
                 <div style={styles.histTop}>
                   <span style={styles.histDate}>{formaterDate(h.date)}</span>
                   <div style={styles.histActions}>
                     <button
                       style={{ ...styles.linkBtn, color: "var(--rouge)" }}
+                      onClick={() => chargerDepuisHistorique(h.texte)}
+                    >
+                      Charger dans le formulaire
+                    </button>
+                    <button
+                      style={{ ...styles.linkBtn, color: "var(--encre)" }}
                       onClick={() => copierDepuisHistorique(h.texte)}
                     >
                       Copier
@@ -725,20 +888,44 @@ Dispo par message privé au besoin :)`;
         )}
 
         {postes.map((p, posteIdx) => (
-          <div key={p.id} style={styles.posteCard}>
+          <div key={p.id} style={styles.posteCard} className="no-print">
             <div style={styles.posteHeader}>
               <div style={styles.posteTitleWrap}>
                 <span style={styles.badge}>{posteIdx + 1}</span>
                 <span style={styles.posteTitle}>Poste {posteIdx + 1}</span>
               </div>
-              {postes.length > 1 && (
+              <div style={styles.posteHeaderActions}>
                 <button
-                  style={styles.dangerLink}
-                  onClick={() => supprimerPoste(p.id)}
+                  style={styles.arrowBtn}
+                  disabled={posteIdx === 0}
+                  onClick={() => deplacerPoste(p.id, -1)}
+                  aria-label="Monter ce poste"
                 >
-                  Supprimer ce poste
+                  ↑
                 </button>
-              )}
+                <button
+                  style={styles.arrowBtn}
+                  disabled={posteIdx === postes.length - 1}
+                  onClick={() => deplacerPoste(p.id, 1)}
+                  aria-label="Descendre ce poste"
+                >
+                  ↓
+                </button>
+                <button
+                  style={styles.btnSecondary}
+                  onClick={() => dupliquerPoste(p.id)}
+                >
+                  Dupliquer
+                </button>
+                {postes.length > 1 && (
+                  <button
+                    style={styles.dangerLink}
+                    onClick={() => supprimerPoste(p.id)}
+                  >
+                    Supprimer
+                  </button>
+                )}
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -783,54 +970,113 @@ Dispo par message privé au besoin :)`;
               >
                 Extraire les intervenants
               </button>
+
+              {preview[p.id] && (
+                <div style={styles.previewBox}>
+                  <p style={styles.sectionLabel}>
+                    Aperçu de l'extraction — à confirmer
+                  </p>
+                  <p style={{ fontSize: "13px" }}>
+                    <strong>Poste :</strong>{" "}
+                    {preview[p.id].poste || "(non détecté)"}
+                  </p>
+                  <p style={{ fontSize: "13px" }}>
+                    <strong>Horaires :</strong>{" "}
+                    {preview[p.id].horaires || "(non détectés)"}
+                  </p>
+                  <ul style={{ fontSize: "13px", margin: 0, paddingLeft: "18px" }}>
+                    {preview[p.id].intervenants.map((i, idx) => (
+                      <li key={idx}>
+                        {i.role} — {i.nom}
+                      </li>
+                    ))}
+                  </ul>
+                  <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+                    <button
+                      style={styles.btnSecondary}
+                      onClick={() => confirmerExtraction(p.id)}
+                    >
+                      Confirmer
+                    </button>
+                    <button
+                      style={{ ...styles.linkBtn, color: "var(--muted)" }}
+                      onClick={() => annulerExtraction(p.id)}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={styles.grid2}>
-              <Champ
-                label="Nom du poste"
-                placeholder="ex : 14 Juillet - PAPS"
-                value={p.poste}
-                onChange={(e) => updatePoste(p.id, "poste", e.target.value)}
-              />
-              <Champ
-                label="Horaires"
-                placeholder="ex : 12H - 19H"
-                value={p.horaires}
-                onChange={(e) => updatePoste(p.id, "horaires", e.target.value)}
-              />
-              <Champ
-                label="Heure de RDV"
-                placeholder="ex : 11h30"
-                value={p.heureRdv}
-                onChange={(e) => updatePoste(p.id, "heureRdv", e.target.value)}
-              />
-              <Champ
-                label="Lieu de RDV"
-                placeholder="ex : Nouveau PÔLE"
-                value={p.lieuRdv}
-                onChange={(e) => updatePoste(p.id, "lieuRdv", e.target.value)}
-              />
-              <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
-                <label style={styles.label}>Lieu du poste (adresse)</label>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>
+                  Nom du poste <span style={styles.required}>*</span>
+                </label>
+                <input
+                  style={champStyle(p.poste)}
+                  placeholder="ex : 14 Juillet - PAPS"
+                  value={p.poste}
+                  onChange={(e) => updatePoste(p.id, "poste", e.target.value)}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>
+                  Horaires <span style={styles.required}>*</span>
+                </label>
+                <input
+                  style={champStyle(p.horaires)}
+                  placeholder="ex : 12H - 19H"
+                  value={p.horaires}
+                  onChange={(e) => updatePoste(p.id, "horaires", e.target.value)}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Heure de RDV</label>
                 <input
                   style={styles.input}
+                  placeholder="ex : 11h30"
+                  value={p.heureRdv}
+                  onChange={(e) => updatePoste(p.id, "heureRdv", e.target.value)}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Lieu de RDV</label>
+                <input
+                  style={styles.input}
+                  placeholder="ex : Nouveau PÔLE"
+                  value={p.lieuRdv}
+                  onChange={(e) => updatePoste(p.id, "lieuRdv", e.target.value)}
+                />
+              </div>
+              <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
+                <label style={styles.label}>
+                  Lieu du poste (adresse) <span style={styles.required}>*</span>
+                </label>
+                <input
+                  style={champStyle(p.lieuPoste)}
                   value={p.lieuPoste}
                   onChange={(e) => updatePoste(p.id, "lieuPoste", e.target.value)}
                 />
               </div>
               <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
-                <label style={styles.label}>Contact(s) sur place</label>
+                <label style={styles.label}>
+                  Contact(s) sur place <span style={styles.required}>*</span>
+                </label>
                 <input
-                  style={styles.input}
+                  style={champStyle(p.contacts)}
                   placeholder="Nom (06...) et Nom (06...)"
                   value={p.contacts}
                   onChange={(e) => updatePoste(p.id, "contacts", e.target.value)}
                 />
               </div>
               <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
-                <label style={styles.label}>Véhicule</label>
+                <label style={styles.label}>
+                  Véhicule <span style={styles.required}>*</span>
+                </label>
                 <input
-                  style={styles.input}
+                  style={champStyle(p.vehicule)}
                   placeholder="ex : Liaison RIFTER + sur place VPSP2"
                   value={p.vehicule}
                   onChange={(e) => updatePoste(p.id, "vehicule", e.target.value)}
@@ -898,10 +1144,7 @@ Dispo par message privé au besoin :)`;
                   </label>
                 </div>
               ))}
-              <button
-                style={styles.addLink}
-                onClick={() => addIntervenant(p.id)}
-              >
+              <button style={styles.addLink} onClick={() => addIntervenant(p.id)}>
                 + Ajouter un intervenant
               </button>
             </div>
@@ -918,12 +1161,12 @@ Dispo par message privé au besoin :)`;
           </div>
         ))}
 
-        <button style={styles.btnDashed} onClick={ajouterPoste}>
+        <button style={styles.btnDashed} className="no-print" onClick={ajouterPoste}>
           + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
         </button>
 
         {modeles.length > 0 && (
-          <section style={styles.panel}>
+          <section style={styles.panel} className="no-print">
             <p style={styles.panelTitle}>Modèles enregistrés</p>
             {modeles.map((m) => (
               <div key={m.id} style={styles.modeleRow}>
@@ -940,35 +1183,46 @@ Dispo par message privé au besoin :)`;
         )}
 
         {!message && (
-          <section style={styles.fieldGroup}>
+          <section style={styles.fieldGroup} className="no-print">
             <p style={styles.sectionLabel}>Aperçu en temps réel</p>
             <pre style={styles.apercuBox}>{apercu}</pre>
           </section>
         )}
 
         {!message && (
-          <button style={styles.btnPrimary} onClick={genererMessage}>
+          <button style={styles.btnPrimary} className="no-print" onClick={genererMessage}>
             Générer le message
           </button>
         )}
 
         {message && (
-          <section style={styles.finalBox}>
+          <section style={styles.finalBox} className="print-area">
             <p style={styles.sectionLabel}>Message final</p>
             <textarea
               style={styles.finalTextarea}
+              className="no-print"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <div style={styles.actionsRow}>
+            <pre style={{ ...styles.apercuBox, display: "none" }} className="print-only">
+              {message}
+            </pre>
+            <div style={styles.actionsRow} className="no-print">
               <button style={styles.btnDark} onClick={copierMessage}>
                 {copied ? "Copié ✓" : "Copier le message"}
               </button>
               <button style={styles.btnWhatsapp} onClick={envoyerWhatsApp}>
                 Envoyer sur WhatsApp
               </button>
+              <button style={styles.btnOutlinePrint} onClick={imprimer}>
+                Imprimer / Exporter en PDF
+              </button>
             </div>
-            <button style={styles.backLink} onClick={() => setMessage("")}>
+            <button
+              style={styles.backLink}
+              className="no-print"
+              onClick={() => setMessage("")}
+            >
               ← Revenir à l'édition / aperçu
             </button>
           </section>
