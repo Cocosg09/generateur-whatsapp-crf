@@ -13,6 +13,7 @@ import PosteCard from "./components/PosteCard";
 import HistoriquePanel from "./components/HistoriquePanel";
 import ModelesPanel from "./components/ModelesPanel";
 import MessageEditor from "./components/MessageEditor";
+import ImportOrdreMission from "./components/ImportOrdreMission";
 
 const BROUILLON_KEY = "crf-postes-brouillon";
 
@@ -229,6 +230,30 @@ export default function Home() {
     );
   }
 
+  function importerPostesDepuisOrdreMission(postesDetectes) {
+    const nouveaux = postesDetectes.map((p) => ({
+      ...nouveauPoste(),
+      poste: p.poste || "",
+      horaires: p.horaires || "",
+      lieuPoste: p.lieuPoste || "",
+      contacts: p.contacts || "",
+      intervenants:
+        p.intervenants.length > 0
+          ? p.intervenants.map((i) => ({ ...i }))
+          : [nouvelIntervenant()],
+    }));
+    setPostes((prev) => {
+      const posteInitialVide =
+        prev.length === 1 &&
+        !prev[0].poste.trim() &&
+        !prev[0].horaires.trim() &&
+        !prev[0].lieuPoste.trim() &&
+        !prev[0].contacts.trim() &&
+        prev[0].intervenants.every((i) => !i.nom.trim());
+      return posteInitialVide ? nouveaux : [...prev, ...nouveaux];
+    });
+  }
+
   function extraireDuTableau(posteId) {
     const poste = postes.find((p) => p.id === posteId);
     if (!poste) return;
@@ -375,6 +400,8 @@ export default function Home() {
 
       <main style={styles.main} className="dps-layout">
         <div className="form-column">
+          <ImportOrdreMission onConfirmer={importerPostesDepuisOrdreMission} />
+
           {afficherHistorique && (
             <HistoriquePanel
               historique={historique}
