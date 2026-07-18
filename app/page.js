@@ -9,6 +9,8 @@ import {
   extraireDuTableauTexte,
   construireMessage,
   parserMessage,
+  serialiserPostes,
+  restaurerPostes,
 } from "@/lib/dps";
 import { styles } from "./components/styles";
 import PosteCard from "./components/PosteCard";
@@ -326,6 +328,7 @@ export default function Home() {
       id: crypto.randomUUID(),
       texte: message,
       date: new Date().toISOString(),
+      postes: serialiserPostes(postes),
     };
     const res = await fetch("/api/historique", {
       method: "POST",
@@ -356,14 +359,22 @@ export default function Home() {
     alert("Message copié !");
   }
 
-  function chargerDepuisHistorique(texte) {
+  function chargerDepuisHistorique(entree) {
     if (
       !confirm("Remplacer le formulaire actuel par ce message de l'historique ?")
     )
       return;
 
-    setPostes(parserMessage(texte));
-    setDesynchronise(false);
+    // Les entrées récentes portent les données structurées du formulaire :
+    // restauration exacte, sans repasser par le parsing regex du texte
+    // (conservé pour les anciennes entrées, texte seul).
+    const nouveauxPostes =
+      restaurerPostes(entree.postes) || parserMessage(entree.texte);
+    setPostes(nouveauxPostes);
+    // Si le texte enregistré avait été retouché à la main, on le restaure
+    // tel quel et on marque le message comme désynchronisé du formulaire.
+    setMessage(entree.texte);
+    setDesynchronise(construireMessage(nouveauxPostes) !== entree.texte);
     setSubmitAttempted(false);
     setAfficherHistorique(false);
   }

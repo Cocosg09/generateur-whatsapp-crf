@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 import { NextResponse } from "next/server";
 import { requirePermission } from "@/lib/session-guard";
+import { restaurerPostes, serialiserPostes } from "@/lib/dps";
 
 let redis;
 function getRedis() {
@@ -14,6 +15,7 @@ function getRedis() {
 const CLE = "historique-messages";
 const MAX_HISTORIQUE = 50;
 const MAX_TEXTE = 20000;
+const MAX_POSTES_JSON = 30000;
 
 async function lireHistorique(r) {
   const data = await r.get(CLE);
@@ -38,7 +40,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  if (!(await requirePermission(request, "historique"))) {
+  const session = await requirePermission(request, "historique");
+  if (!session) {
     return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
   }
   try {
@@ -53,12 +56,24 @@ export async function POST(request) {
       return NextResponse.json({ message: "Entrée invalide." }, { status: 400 });
     }
 
+    // Données structurées du formulaire (optionnelles : les clients
+    // n'envoyant que le texte restent acceptés). On les repasse par
+    // restaurer/sérialiser pour ne stocker que des champs connus et sains.
+    let postes;
+    if (body.postes !== undefined) {
+      const restaures = restaurerPostes(body.postes);
+      if (!restaures || JSON.stringify(body.postes).length > MAX_POSTES_JSON) {
+        return NextResponse.json({ message: "Entrée invalide." }, { status: 400 });
+      }
+      postes = serialiserPostes(restaures);
+    }
+
+    const entree = { id: body.id, texte: body.texte, date: body.date, auteur: session.u };
+    if (postes) entree.postes = postes;
+
     const r = getRedis();
     const historique = await lireHistorique(r);
-    const next = [
-      { id: body.id, texte: body.texte, date: body.date },
-      ...historique,
-    ].slice(0, MAX_HISTORIQUE);
+    const next = [entree, ...historique].slice(0, MAX_HISTORIQUE);
     await r.set(CLE, JSON.stringify(next));
     return NextResponse.json(next);
   } catch (err) {
