@@ -76,6 +76,12 @@ textarea {
     position: sticky;
     top: 88px;
   }
+  /* Remplit la hauteur visible de la colonne collante pour éviter d'avoir à
+     redimensionner manuellement le texte du message. */
+  .message-textarea {
+    height: calc(100vh - 260px);
+    min-height: 420px;
+  }
 }
 
 /* Animations d'entrée au chargement de la page */

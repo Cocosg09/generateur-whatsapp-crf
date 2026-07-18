@@ -28,7 +28,7 @@ export default function MessageEditor({
 
       <textarea
         style={styles.finalTextarea}
-        className="no-print"
+        className="no-print message-textarea"
         value={message}
         onChange={(e) => onChange(e.target.value)}
       />
