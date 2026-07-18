@@ -38,18 +38,21 @@ export default function HistoriquePanel({
             <div style={styles.histActions}>
               <button
                 style={{ ...styles.linkBtn, color: "var(--rouge)" }}
+                className="hist-action-btn"
                 onClick={() => onCharger(h.texte)}
               >
                 Charger dans le formulaire
               </button>
               <button
                 style={{ ...styles.linkBtn, color: "var(--encre)" }}
+                className="hist-action-btn"
                 onClick={() => onCopier(h.texte)}
               >
                 Copier
               </button>
               <button
                 style={{ ...styles.linkBtn, color: "var(--muted)" }}
+                className="hist-action-btn"
                 onClick={() => onSupprimer(h.id)}
               >
                 Supprimer

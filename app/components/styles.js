@@ -315,7 +315,7 @@ export const styles = {
     gap: "6px",
   },
   histDate: { fontSize: "11px", color: "var(--muted)" },
-  histActions: { display: "flex", gap: "10px" },
+  histActions: { display: "flex", gap: "10px", flexWrap: "wrap" },
   linkBtn: {
     background: "none",
     border: "none",

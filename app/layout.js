@@ -18,6 +18,11 @@ export const metadata = {
     "Préparer et diffuser le message WhatsApp de briefing d'un Dispositif Prévisionnel de Secours (DPS).",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html

@@ -32,13 +32,10 @@ export PDF.
   typographie adaptée au papier, pied de page).
 - **Accès protégé** par mot de passe partagé (cookie de session).
   export PDF avec mise en page dédiée.
-- **Mise en page adaptative** : colonne unique sur petit écran, deux colonnes
-  (formulaire + message) avec colonne message collante à partir de 1024px de
-  large.
-- **Comptes individuels et rôles** : chaque utilisateur a son propre
-  identifiant/mot de passe ; un rôle `admin` gère les comptes et l'accès par
-  fonctionnalité (postes, historique, modèles) des comptes `user` depuis une
-  page `/admin`.
+- **Utilisable en mobilité** : mise en page à une colonne, champs et cibles
+  tactiles adaptés sur téléphone (< 640px pour l'en-tête, < 480px pour les
+  champs d'un poste et les boutons).
+- **Accès protégé** par mot de passe partagé (cookie de session).
 
 ## Prérequis
 
