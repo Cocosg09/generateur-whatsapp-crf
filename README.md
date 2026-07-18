@@ -14,11 +14,18 @@ de moyens réutilisables, et export PDF.
   poste, des horaires et des intervenants, à confirmer avant application.
 - **Intervenants** : rôle, nom, statut conducteur (VL ou VPSP).
 - **Suggestions de champs** : les champs heure de RDV, lieu de RDV, lieu du
-  poste et contacts proposent un menu déroulant de valeurs fréquentes (géré
-  depuis `/admin`), tout en restant des champs texte libres.
+  poste et contacts proposent, au fur et à mesure de la saisie, les valeurs
+  fréquentes correspondantes (géré depuis `/admin`), tout en restant des
+  champs texte libres.
 - **Catalogue de moyens** : un moyen (véhicule + lot de matériel associé),
-  géré depuis `/admin`, se sélectionne sur un poste pour remplir d'un coup les
-  champs véhicule et matériel.
+  géré depuis `/admin`, se recherche dans le champ véhicule d'un poste ; le
+  sélectionner remplit d'un coup les champs véhicule et matériel.
+- **Calcul de l'heure de RDV** : à partir du début des horaires du poste,
+  suggère une heure de RDV (avance en minutes réglable, 30 min par défaut),
+  qui reste à confirmer/ajuster manuellement. L'avance peut aussi être
+  calculée automatiquement depuis le temps de trajet réel entre le Nouveau
+  Pôle et le lieu du poste (via [OpenRouteService](https://openrouteservice.org),
+  nécessite `ORS_API_KEY`).
 - **Message final éditable en direct** : le message est généré automatiquement
   depuis le formulaire (les champs non remplis sont omis), mais reste éditable
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du
@@ -62,6 +69,7 @@ versionné) :
 | `INITIAL_ADMIN_USERNAME`  | Identifiant du compte admin créé automatiquement au premier login              |
 | `INITIAL_ADMIN_PASSWORD`  | Mot de passe de ce compte admin (à changer/retirer une fois le compte créé)    |
 | `REDIS_URL`               | URL de connexion Redis (utilisateurs, historique, moyens, listes de suggestions) |
+| `ORS_API_KEY`             | Clé API [OpenRouteService](https://openrouteservice.org/dev/#/signup) (gratuite) pour le calcul du temps de trajet depuis le Nouveau Pôle ; fonctionnalité désactivée si absente |
 
 Le tout premier login avec `INITIAL_ADMIN_USERNAME`/`INITIAL_ADMIN_PASSWORD`
 crée le compte admin correspondant dans Redis (idempotent : les logins

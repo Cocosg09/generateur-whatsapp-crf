@@ -1,29 +1,83 @@
-import { ROLES_COURANTS } from "@/lib/dps";
+import { useEffect, useRef, useState } from "react";
+import { ROLES_COURANTS, AVANCE_RDV_MINUTES_PAR_DEFAUT, calculerHeureRdv } from "@/lib/dps";
 import { styles } from "./styles";
 
-// Menu déroulant de suggestions (géré depuis /admin) au-dessus d'un champ
-// texte libre : choisir une valeur la recopie dans le champ, qui reste
-// modifiable à la main ensuite.
-function Suggestions({ valeurs, onChoisir }) {
-  if (!valeurs || valeurs.length === 0) return null;
+// Champ texte libre avec suggestions (gérées depuis /admin) façon barre de
+// recherche : au clic, toutes les valeurs s'affichent ; la saisie réduit la
+// liste aux valeurs correspondantes. `onChoisir` (par défaut `onChange`) est
+// appelé quand une suggestion est cliquée ou validée au clavier.
+function ChampAutocomplete({ valeur, options, style, placeholder, onChange, onChoisir }) {
+  const [ouvert, setOuvert] = useState(false);
+  const [surligne, setSurligne] = useState(-1);
+  const conteneurRef = useRef(null);
+
+  useEffect(() => {
+    function onClicExterieur(e) {
+      if (conteneurRef.current && !conteneurRef.current.contains(e.target)) {
+        setOuvert(false);
+      }
+    }
+    document.addEventListener("mousedown", onClicExterieur);
+    return () => document.removeEventListener("mousedown", onClicExterieur);
+  }, []);
+
+  const suggestions = ouvert
+    ? (options || []).filter((o) => o.toLowerCase().includes(valeur.trim().toLowerCase()))
+    : [];
+
+  function choisir(v) {
+    (onChoisir || onChange)(v);
+    setOuvert(false);
+    setSurligne(-1);
+  }
+
   return (
-    <select
-      style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
-      defaultValue=""
-      onChange={(e) => {
-        if (e.target.value) onChoisir(e.target.value);
-        e.target.value = "";
-      }}
-    >
-      <option value="" disabled>
-        Suggestions…
-      </option>
-      {valeurs.map((v) => (
-        <option key={v} value={v}>
-          {v}
-        </option>
-      ))}
-    </select>
+    <div style={styles.autocompleteWrap} ref={conteneurRef}>
+      <input
+        style={style}
+        placeholder={placeholder}
+        value={valeur}
+        onFocus={() => setOuvert(true)}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOuvert(true);
+          setSurligne(-1);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setOuvert(false);
+          else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setSurligne((i) => Math.min(i + 1, suggestions.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setSurligne((i) => Math.max(i - 1, 0));
+          } else if (e.key === "Enter" && surligne >= 0 && suggestions[surligne]) {
+            e.preventDefault();
+            choisir(suggestions[surligne]);
+          }
+        }}
+      />
+      {suggestions.length > 0 && (
+        <ul style={styles.autocompleteList}>
+          {suggestions.map((s, idx) => (
+            <li
+              key={s}
+              style={{
+                ...styles.autocompleteItem,
+                ...(idx === surligne ? styles.autocompleteItemActive : {}),
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                choisir(s);
+              }}
+              onMouseEnter={() => setSurligne(idx)}
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -47,10 +101,40 @@ export default function PosteCard({
   onConfirmerExtraction,
   onAnnulerExtraction,
 }) {
+  const [avanceRdv, setAvanceRdv] = useState(AVANCE_RDV_MINUTES_PAR_DEFAUT);
+  const [chargementTrajet, setChargementTrajet] = useState(false);
+  const [erreurTrajet, setErreurTrajet] = useState("");
+  const heureRdvCalculee = calculerHeureRdv(p.horaires, Number(avanceRdv) || 0);
+
   function champStyle(valeur) {
     return submitAttempted && !valeur.trim()
       ? { ...styles.input, ...styles.inputInvalide }
       : styles.input;
+  }
+
+  async function calculerTrajet() {
+    if (!p.lieuPoste.trim()) return;
+    setErreurTrajet("");
+    setChargementTrajet(true);
+    try {
+      const res = await fetch("/api/trajet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adresse: p.lieuPoste }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErreurTrajet(body.message || "Impossible de calculer le trajet.");
+        return;
+      }
+      setAvanceRdv(body.minutes);
+      const heure = calculerHeureRdv(p.horaires, body.minutes);
+      if (heure) onUpdatePoste(p.id, "heureRdv", heure);
+    } catch {
+      setErreurTrajet("Impossible de calculer le trajet, réessayez plus tard.");
+    } finally {
+      setChargementTrajet(false);
+    }
   }
 
   return (
@@ -163,87 +247,98 @@ export default function PosteCard({
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Heure de RDV</label>
-          <Suggestions
-            valeurs={listes.heureRdv}
-            onChoisir={(v) => onUpdatePoste(p.id, "heureRdv", v)}
-          />
-          <input
+          <ChampAutocomplete
             style={styles.input}
             placeholder="ex : 11h30"
-            value={p.heureRdv}
-            onChange={(e) => onUpdatePoste(p.id, "heureRdv", e.target.value)}
+            valeur={p.heureRdv}
+            options={listes.heureRdv}
+            onChange={(v) => onUpdatePoste(p.id, "heureRdv", v)}
           />
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              style={{ ...styles.input, width: "60px", padding: "4px 6px" }}
+              value={avanceRdv}
+              onChange={(e) => setAvanceRdv(e.target.value)}
+              aria-label="Avance en minutes avant le début du poste"
+            />
+            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
+              min avant le début
+            </span>
+            <button
+              type="button"
+              style={styles.linkBtn}
+              disabled={!heureRdvCalculee}
+              onClick={() => onUpdatePoste(p.id, "heureRdv", heureRdvCalculee)}
+            >
+              Calculer{heureRdvCalculee ? ` (${heureRdvCalculee})` : ""}
+            </button>
+          </div>
+          <button
+            type="button"
+            style={{ ...styles.linkBtn, marginTop: "2px" }}
+            disabled={!p.lieuPoste.trim() || chargementTrajet}
+            onClick={calculerTrajet}
+          >
+            {chargementTrajet ? "Calcul du trajet…" : "Calculer le trajet depuis Pamiers"}
+          </button>
+          {erreurTrajet && (
+            <p style={{ fontSize: "12px", color: "var(--rouge)", margin: 0 }}>{erreurTrajet}</p>
+          )}
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
-          <Suggestions
-            valeurs={listes.lieuRdv}
-            onChoisir={(v) => onUpdatePoste(p.id, "lieuRdv", v)}
-          />
-          <input
+          <ChampAutocomplete
             style={styles.input}
             placeholder="ex : Nouveau PÔLE"
-            value={p.lieuRdv}
-            onChange={(e) => onUpdatePoste(p.id, "lieuRdv", e.target.value)}
+            valeur={p.lieuRdv}
+            options={listes.lieuRdv}
+            onChange={(v) => onUpdatePoste(p.id, "lieuRdv", v)}
           />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Lieu du poste (adresse) <span style={styles.required}>*</span>
           </label>
-          <Suggestions
-            valeurs={listes.lieuPoste}
-            onChoisir={(v) => onUpdatePoste(p.id, "lieuPoste", v)}
-          />
-          <input
+          <ChampAutocomplete
             style={champStyle(p.lieuPoste)}
-            value={p.lieuPoste}
-            onChange={(e) => onUpdatePoste(p.id, "lieuPoste", e.target.value)}
+            valeur={p.lieuPoste}
+            options={listes.lieuPoste}
+            onChange={(v) => onUpdatePoste(p.id, "lieuPoste", v)}
           />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Contact(s) sur place <span style={styles.required}>*</span>
           </label>
-          <Suggestions
-            valeurs={listes.contacts}
-            onChoisir={(v) => onUpdatePoste(p.id, "contacts", v)}
-          />
-          <input
+          <ChampAutocomplete
             style={champStyle(p.contacts)}
             placeholder="Nom (06...) et Nom (06...)"
-            value={p.contacts}
-            onChange={(e) => onUpdatePoste(p.id, "contacts", e.target.value)}
+            valeur={p.contacts}
+            options={listes.contacts}
+            onChange={(v) => onUpdatePoste(p.id, "contacts", v)}
           />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Véhicule <span style={styles.required}>*</span>
           </label>
-          {moyens.length > 0 && (
-            <select
-              style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
-              defaultValue=""
-              onChange={(e) => {
-                if (e.target.value) onChargerMoyen(p.id, e.target.value);
-                e.target.value = "";
-              }}
-            >
-              <option value="" disabled>
-                Choisir un moyen (remplit véhicule + matériel)…
-              </option>
-              {moyens.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nom}
-                </option>
-              ))}
-            </select>
-          )}
-          <input
+          <ChampAutocomplete
             style={champStyle(p.vehicule)}
             placeholder="ex : Liaison RIFTER + sur place VPSP2"
-            value={p.vehicule}
-            onChange={(e) => onUpdatePoste(p.id, "vehicule", e.target.value)}
+            valeur={p.vehicule}
+            options={moyens.map((m) => m.nom)}
+            onChange={(v) => onUpdatePoste(p.id, "vehicule", v)}
+            onChoisir={(nom) => {
+              const moyenCorrespondant = moyens.find((m) => m.nom === nom);
+              if (moyenCorrespondant) {
+                onChargerMoyen(p.id, moyenCorrespondant.id);
+              } else {
+                onUpdatePoste(p.id, "vehicule", nom);
+              }
+            }}
           />
         </div>
       </div>
