@@ -33,19 +33,25 @@ export default function MessageEditor({
         onChange={(e) => onChange(e.target.value)}
       />
       <div className="print-only print-header">
-        <h1>Générateur de message DPS — Croix-Rouge française</h1>
-        <p>
-          Édité le{" "}
-          {new Date().toLocaleDateString("fr-FR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}
-        </p>
+        <span className="print-mark" aria-hidden="true">
+          ✚
+        </span>
+        <div>
+          <h1>Générateur de message DPS — Croix-Rouge française</h1>
+          <p>
+            Édité le{" "}
+            {new Date().toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </p>
+        </div>
       </div>
-      <pre style={styles.apercuBox} className="print-only">
-        {message}
-      </pre>
+      <pre className="print-only message-print-body">{message}</pre>
+      <p className="print-only print-footer">
+        Généré via le générateur de message DPS — Croix-Rouge française
+      </p>
       <div style={styles.actionsRow} className="no-print">
         <button style={styles.btnDark} onClick={onCopier}>
           {copied ? "Copié ✓" : "Copier le message"}

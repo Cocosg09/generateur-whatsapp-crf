@@ -25,7 +25,8 @@ export PDF.
   navigateur (localStorage) pour éviter une perte de saisie en cas de
   rechargement accidentel de la page.
 - **Export** : copie presse-papiers, envoi direct vers WhatsApp, impression /
-  export PDF avec mise en page dédiée.
+  export PDF avec une mise en page dédiée (marges A4, en-tête Croix-Rouge,
+  typographie adaptée au papier, pied de page).
 - **Accès protégé** par mot de passe partagé (cookie de session).
 
 ## Prérequis

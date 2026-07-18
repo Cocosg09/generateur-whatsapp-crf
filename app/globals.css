@@ -132,7 +132,17 @@ textarea {
   }
 }
 
+@page {
+  size: A4;
+  margin: 16mm 14mm;
+}
+
 @media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
   .dps-layout {
     display: block !important;
   }
@@ -150,21 +160,71 @@ textarea {
     border: none !important;
     padding: 0 !important;
   }
+
+  /* En-tête Croix-Rouge : la croix rouge ne dépend pas de var(--rouge) ici
+     (les couleurs de fond sont désactivées à l'impression par les
+     navigateurs sauf activation explicite de "Graphiques d'arrière-plan"),
+     on la dessine donc avec une bordure/texte qui reste visible même en
+     niveaux de gris. */
   .print-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     border-bottom: 2px solid #000;
     padding-bottom: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+  }
+  .print-header .print-mark {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
   }
   .print-header h1 {
-    font-size: 16px;
-    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 3px;
   }
   .print-header p {
-    font-size: 11px;
+    font-size: 10px;
     color: #444;
     margin: 0;
   }
-  body {
-    background: #fff !important;
+
+  /* Le message imprimé lui-même : typographie et largeur pensées pour la
+     lecture papier plutôt que pour l'édition à l'écran (cf. .finalTextarea,
+     visible seulement à l'écran grâce à .no-print). */
+  .print-only.message-print-body {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    color: #000;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    break-inside: avoid;
+  }
+
+  /* Évite qu'un poste ne soit coupé entre deux pages quand le message est
+     long (plusieurs postes séparés par une ligne de tirets, cf.
+     lib/dps.js:construireMessage). */
+  .message-print-body {
+    break-inside: avoid-page;
+  }
+
+  .print-footer {
+    display: block !important;
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 1px solid #999;
+    font-size: 9px;
+    color: #666;
   }
 }
