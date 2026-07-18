@@ -381,12 +381,12 @@ export default function Home() {
 
   return (
     <div style={styles.page}>
-      <header style={styles.header} className="no-print dps-header">
-        <div style={styles.headerTitle}>
+      <header style={styles.header} className="no-print dps-header app-header">
+        <div style={styles.headerTitle} className="header-title">
           <span aria-hidden="true">✚</span>
           Générateur de message DPS
         </div>
-        <div style={styles.headerActions}>
+        <div style={styles.headerActions} className="header-actions">
           <button style={styles.ghostBtn} onClick={() => setAfficherImportPdf(true)}>
             Importer un PDF
           </button>

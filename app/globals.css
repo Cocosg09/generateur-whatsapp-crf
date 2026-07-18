@@ -84,6 +84,50 @@ textarea {
   }
 }
 
+/* Écrans étroits (téléphones) : champs sur une colonne et cibles tactiles
+   agrandies. Les styles ici l'emportent sur les styles inline de
+   app/components/styles.js (d'où les !important), qui n'ont pas de notion
+   de media query. */
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .header-title {
+    font-size: 16px !important;
+  }
+  .header-actions {
+    flex-wrap: wrap !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .poste-fields-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .arrow-btn,
+  .remove-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .intervenant-main-line {
+    flex-wrap: wrap !important;
+  }
+  .role-select {
+    width: auto !important;
+    flex: 1 1 140px !important;
+  }
+  .vehicule-select {
+    flex: 1 1 100px !important;
+    padding: 9px 10px !important;
+  }
+  .hist-action-btn {
+    padding: 8px 0 !important;
+  }
+}
+
 /* Animations d'entrée au chargement de la page */
 @keyframes dps-entree {
   from {
