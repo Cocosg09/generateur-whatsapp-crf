@@ -151,9 +151,13 @@ Audit réalisé après la mise en place des comptes individuels (voir aussi
   `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`,
   `Strict-Transport-Security`. La CSP autorise `style-src 'unsafe-inline'`
   car l'app utilise des styles React inline (`app/components/styles.js`)
-  plutôt que des classes CSS — un passage à un CSP par nonce demanderait de
-  rendre toute l'app dynamiquement (cf. doc Next.js sur les nonces CSP) et
-  n'a pas été jugé nécessaire pour un outil interne.
+  plutôt que des classes CSS, et `script-src 'unsafe-inline'` car Next.js
+  (App Router) injecte lui-même des scripts inline pour l'hydratation sur
+  toutes les pages — sans quoi l'hydratation échoue silencieusement (ex.
+  formulaire de connexion inerte). Un passage à un CSP par nonce résoudrait
+  ça proprement mais demanderait de rendre toute l'app dynamiquement (cf.
+  doc Next.js sur les nonces CSP) et n'a pas été jugé nécessaire pour un
+  outil interne.
 - **Rate limiting du login** (`lib/rate-limit.js`) : compteur par IP basé
   sur Redis (`INCR`/`EXPIRE`) plutôt qu'un `Map` en mémoire — un `Map` ne
   fonctionne pas correctement sur Vercel, où chaque instance serverless a
