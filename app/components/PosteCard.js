@@ -2,6 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { ROLES_COURANTS, AVANCE_RDV_MINUTES_PAR_DEFAUT, calculerHeureRdv } from "@/lib/dps";
 import { styles } from "./styles";
 
+// Ferme un panneau (menu, autocomplete) au clic en dehors de son conteneur,
+// tant qu'il est ouvert.
+function useFermetureExterieure(actif, fermer) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!actif) return;
+    function onClicExterieur(e) {
+      if (ref.current && !ref.current.contains(e.target)) fermer();
+    }
+    document.addEventListener("mousedown", onClicExterieur);
+    return () => document.removeEventListener("mousedown", onClicExterieur);
+  }, [actif, fermer]);
+  return ref;
+}
+
 // Champ texte libre avec suggestions (gérées depuis /admin) façon barre de
 // recherche : au clic, toutes les valeurs s'affichent ; la saisie réduit la
 // liste aux valeurs correspondantes. `onChoisir` (par défaut `onChange`) est
@@ -9,17 +24,7 @@ import { styles } from "./styles";
 function ChampAutocomplete({ valeur, options, style, placeholder, onChange, onChoisir }) {
   const [ouvert, setOuvert] = useState(false);
   const [surligne, setSurligne] = useState(-1);
-  const conteneurRef = useRef(null);
-
-  useEffect(() => {
-    function onClicExterieur(e) {
-      if (conteneurRef.current && !conteneurRef.current.contains(e.target)) {
-        setOuvert(false);
-      }
-    }
-    document.addEventListener("mousedown", onClicExterieur);
-    return () => document.removeEventListener("mousedown", onClicExterieur);
-  }, []);
+  const conteneurRef = useFermetureExterieure(ouvert, () => setOuvert(false));
 
   const suggestions = ouvert
     ? (options || []).filter((o) => o.toLowerCase().includes(valeur.trim().toLowerCase()))
@@ -76,6 +81,77 @@ function ChampAutocomplete({ valeur, options, style, placeholder, onChange, onCh
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+// Menu compact (déclenché par une icône) regroupant les deux façons de
+// calculer une heure de RDV suggérée : manuellement via une avance en
+// minutes, ou depuis le temps de trajet réel jusqu'au lieu du poste.
+function MenuRdvAuto({
+  avance,
+  onAvanceChange,
+  heureCalculee,
+  onAppliquerHeure,
+  onCalculerTrajet,
+  chargementTrajet,
+  trajetDisponible,
+  erreurTrajet,
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  const ref = useFermetureExterieure(ouvert, () => setOuvert(false));
+
+  return (
+    <div style={styles.menuWrap} ref={ref}>
+      <button
+        type="button"
+        style={styles.menuTrigger}
+        onClick={() => setOuvert((v) => !v)}
+        aria-label="Calculer automatiquement l'heure de RDV"
+        title="Calculer automatiquement l'heure de RDV"
+      >
+        ⏱
+      </button>
+      {ouvert && (
+        <div style={styles.menuPanel}>
+          <p style={styles.menuPanelTitle}>Heure de RDV automatique</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              style={{ ...styles.input, width: "60px", padding: "4px 6px" }}
+              value={avance}
+              onChange={(e) => onAvanceChange(e.target.value)}
+              aria-label="Avance en minutes avant le début du poste"
+            />
+            <span style={{ fontSize: "12px", color: "var(--muted)" }}>min avant le début</span>
+          </div>
+          <button
+            type="button"
+            style={styles.btnSecondary}
+            disabled={!heureCalculee}
+            onClick={() => {
+              onAppliquerHeure(heureCalculee);
+              setOuvert(false);
+            }}
+          >
+            Appliquer{heureCalculee ? ` : ${heureCalculee}` : ""}
+          </button>
+          <div style={styles.menuDivider} />
+          <button
+            type="button"
+            style={styles.btnSecondary}
+            disabled={!trajetDisponible || chargementTrajet}
+            onClick={onCalculerTrajet}
+          >
+            {chargementTrajet ? "Calcul du trajet…" : "Calculer depuis le trajet (Pamiers)"}
+          </button>
+          {erreurTrajet && (
+            <p style={{ fontSize: "12px", color: "var(--rouge)", margin: 0 }}>{erreurTrajet}</p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -246,7 +322,19 @@ export default function PosteCard({
           />
         </div>
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>Heure de RDV</label>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <label style={styles.label}>Heure de RDV</label>
+            <MenuRdvAuto
+              avance={avanceRdv}
+              onAvanceChange={setAvanceRdv}
+              heureCalculee={heureRdvCalculee}
+              onAppliquerHeure={(h) => onUpdatePoste(p.id, "heureRdv", h)}
+              onCalculerTrajet={calculerTrajet}
+              chargementTrajet={chargementTrajet}
+              trajetDisponible={!!p.lieuPoste.trim()}
+              erreurTrajet={erreurTrajet}
+            />
+          </div>
           <ChampAutocomplete
             style={styles.input}
             placeholder="ex : 11h30"
@@ -254,39 +342,6 @@ export default function PosteCard({
             options={listes.heureRdv}
             onChange={(v) => onUpdatePoste(p.id, "heureRdv", v)}
           />
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
-            <input
-              type="number"
-              min="0"
-              step="5"
-              style={{ ...styles.input, width: "60px", padding: "4px 6px" }}
-              value={avanceRdv}
-              onChange={(e) => setAvanceRdv(e.target.value)}
-              aria-label="Avance en minutes avant le début du poste"
-            />
-            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
-              min avant le début
-            </span>
-            <button
-              type="button"
-              style={styles.linkBtn}
-              disabled={!heureRdvCalculee}
-              onClick={() => onUpdatePoste(p.id, "heureRdv", heureRdvCalculee)}
-            >
-              Calculer{heureRdvCalculee ? ` (${heureRdvCalculee})` : ""}
-            </button>
-          </div>
-          <button
-            type="button"
-            style={{ ...styles.linkBtn, marginTop: "2px" }}
-            disabled={!p.lieuPoste.trim() || chargementTrajet}
-            onClick={calculerTrajet}
-          >
-            {chargementTrajet ? "Calcul du trajet…" : "Calculer le trajet depuis Pamiers"}
-          </button>
-          {erreurTrajet && (
-            <p style={{ fontSize: "12px", color: "var(--rouge)", margin: 0 }}>{erreurTrajet}</p>
-          )}
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
