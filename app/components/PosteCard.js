@@ -1,18 +1,83 @@
+import { useEffect, useRef, useState } from "react";
 import { ROLES_COURANTS } from "@/lib/dps";
 import { styles } from "./styles";
 
-// Liste de suggestions (gérée depuis /admin) attachée à un champ texte libre
-// via l'attribut HTML `list` : le navigateur propose les valeurs qui
-// correspondent à ce qui est tapé, comme une recherche, sans imposer de
-// sélection dans un menu séparé.
-function ListeSuggestions({ id, valeurs }) {
-  if (!valeurs || valeurs.length === 0) return null;
+// Champ texte libre avec suggestions (gérées depuis /admin) façon barre de
+// recherche : au clic, toutes les valeurs s'affichent ; la saisie réduit la
+// liste aux valeurs correspondantes. `onChoisir` (par défaut `onChange`) est
+// appelé quand une suggestion est cliquée ou validée au clavier.
+function ChampAutocomplete({ valeur, options, style, placeholder, onChange, onChoisir }) {
+  const [ouvert, setOuvert] = useState(false);
+  const [surligne, setSurligne] = useState(-1);
+  const conteneurRef = useRef(null);
+
+  useEffect(() => {
+    function onClicExterieur(e) {
+      if (conteneurRef.current && !conteneurRef.current.contains(e.target)) {
+        setOuvert(false);
+      }
+    }
+    document.addEventListener("mousedown", onClicExterieur);
+    return () => document.removeEventListener("mousedown", onClicExterieur);
+  }, []);
+
+  const suggestions = ouvert
+    ? (options || []).filter((o) => o.toLowerCase().includes(valeur.trim().toLowerCase()))
+    : [];
+
+  function choisir(v) {
+    (onChoisir || onChange)(v);
+    setOuvert(false);
+    setSurligne(-1);
+  }
+
   return (
-    <datalist id={id}>
-      {valeurs.map((v) => (
-        <option key={v} value={v} />
-      ))}
-    </datalist>
+    <div style={styles.autocompleteWrap} ref={conteneurRef}>
+      <input
+        style={style}
+        placeholder={placeholder}
+        value={valeur}
+        onFocus={() => setOuvert(true)}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOuvert(true);
+          setSurligne(-1);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setOuvert(false);
+          else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setSurligne((i) => Math.min(i + 1, suggestions.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setSurligne((i) => Math.max(i - 1, 0));
+          } else if (e.key === "Enter" && surligne >= 0 && suggestions[surligne]) {
+            e.preventDefault();
+            choisir(suggestions[surligne]);
+          }
+        }}
+      />
+      {suggestions.length > 0 && (
+        <ul style={styles.autocompleteList}>
+          {suggestions.map((s, idx) => (
+            <li
+              key={s}
+              style={{
+                ...styles.autocompleteItem,
+                ...(idx === surligne ? styles.autocompleteItemActive : {}),
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                choisir(s);
+              }}
+              onMouseEnter={() => setSurligne(idx)}
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -152,79 +217,66 @@ export default function PosteCard({
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Heure de RDV</label>
-          <input
+          <ChampAutocomplete
             style={styles.input}
-            list={`heureRdv-${p.id}`}
             placeholder="ex : 11h30"
-            value={p.heureRdv}
-            onChange={(e) => onUpdatePoste(p.id, "heureRdv", e.target.value)}
+            valeur={p.heureRdv}
+            options={listes.heureRdv}
+            onChange={(v) => onUpdatePoste(p.id, "heureRdv", v)}
           />
-          <ListeSuggestions id={`heureRdv-${p.id}`} valeurs={listes.heureRdv} />
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
-          <input
+          <ChampAutocomplete
             style={styles.input}
-            list={`lieuRdv-${p.id}`}
             placeholder="ex : Nouveau PÔLE"
-            value={p.lieuRdv}
-            onChange={(e) => onUpdatePoste(p.id, "lieuRdv", e.target.value)}
+            valeur={p.lieuRdv}
+            options={listes.lieuRdv}
+            onChange={(v) => onUpdatePoste(p.id, "lieuRdv", v)}
           />
-          <ListeSuggestions id={`lieuRdv-${p.id}`} valeurs={listes.lieuRdv} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Lieu du poste (adresse) <span style={styles.required}>*</span>
           </label>
-          <input
+          <ChampAutocomplete
             style={champStyle(p.lieuPoste)}
-            list={`lieuPoste-${p.id}`}
-            value={p.lieuPoste}
-            onChange={(e) => onUpdatePoste(p.id, "lieuPoste", e.target.value)}
+            valeur={p.lieuPoste}
+            options={listes.lieuPoste}
+            onChange={(v) => onUpdatePoste(p.id, "lieuPoste", v)}
           />
-          <ListeSuggestions id={`lieuPoste-${p.id}`} valeurs={listes.lieuPoste} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Contact(s) sur place <span style={styles.required}>*</span>
           </label>
-          <input
+          <ChampAutocomplete
             style={champStyle(p.contacts)}
-            list={`contacts-${p.id}`}
             placeholder="Nom (06...) et Nom (06...)"
-            value={p.contacts}
-            onChange={(e) => onUpdatePoste(p.id, "contacts", e.target.value)}
+            valeur={p.contacts}
+            options={listes.contacts}
+            onChange={(v) => onUpdatePoste(p.id, "contacts", v)}
           />
-          <ListeSuggestions id={`contacts-${p.id}`} valeurs={listes.contacts} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Véhicule <span style={styles.required}>*</span>
           </label>
-          <input
+          <ChampAutocomplete
             style={champStyle(p.vehicule)}
-            list={`vehicule-${p.id}`}
             placeholder="ex : Liaison RIFTER + sur place VPSP2"
-            value={p.vehicule}
-            onChange={(e) => {
-              const valeur = e.target.value;
-              const moyenCorrespondant = moyens.find(
-                (m) => m.nom.trim().toLowerCase() === valeur.trim().toLowerCase()
-              );
+            valeur={p.vehicule}
+            options={moyens.map((m) => m.nom)}
+            onChange={(v) => onUpdatePoste(p.id, "vehicule", v)}
+            onChoisir={(nom) => {
+              const moyenCorrespondant = moyens.find((m) => m.nom === nom);
               if (moyenCorrespondant) {
                 onChargerMoyen(p.id, moyenCorrespondant.id);
               } else {
-                onUpdatePoste(p.id, "vehicule", valeur);
+                onUpdatePoste(p.id, "vehicule", nom);
               }
             }}
           />
-          {moyens.length > 0 && (
-            <datalist id={`vehicule-${p.id}`}>
-              {moyens.map((m) => (
-                <option key={m.id} value={m.nom} />
-              ))}
-            </datalist>
-          )}
         </div>
       </div>
 
