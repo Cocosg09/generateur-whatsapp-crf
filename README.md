@@ -21,7 +21,9 @@ export PDF.
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du
   formulaire. La zone de texte s'agrandit automatiquement avec le contenu.
 - **Historique** : les messages copiés/envoyés/imprimés sont conservés (les 50
-  derniers), consultables, cherchables, rechargeables dans le formulaire.
+  derniers) avec leur auteur et les données structurées du formulaire ;
+  consultables, cherchables (texte, date, auteur), rechargeables dans le
+  formulaire à l'identique (y compris les retouches manuelles du texte).
 - **Brouillon local** : le formulaire en cours est sauvegardé dans le
   navigateur (localStorage) pour éviter une perte de saisie en cas de
   rechargement accidentel de la page.
@@ -175,9 +177,10 @@ Audit réalisé après la mise en place des comptes individuels (voir aussi
   prochaine connexion de l'utilisateur concerné. La désactivation d'un
   compte (`disabled`), elle, est vérifiée en base à chaque requête API
   (`lib/session-guard.js`) et coupe donc l'accès immédiatement.
-- Le rechargement d'un message depuis l'historique repose sur un parsing par
-  expressions régulières du texte final : un changement de format du message
-  (émojis, libellés) peut casser ce parsing.
+- Le rechargement d'un message depuis l'historique utilise les données
+  structurées stockées avec l'entrée ; seules les entrées antérieures à cette
+  évolution (texte seul) repassent par un parsing par expressions régulières
+  du texte final, sensible aux changements de format du message.
 - Pas de gestion de concurrence avancée sur Redis : deux utilisateurs
   modifiant l'historique/les modèles au même moment peuvent, en théorie,
   écraser une écriture concurrente.

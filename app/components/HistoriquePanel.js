@@ -15,7 +15,8 @@ export default function HistoriquePanel({
         const q = recherche.toLowerCase();
         return (
           h.texte.toLowerCase().includes(q) ||
-          formaterDate(h.date).toLowerCase().includes(q)
+          formaterDate(h.date).toLowerCase().includes(q) ||
+          (h.auteur || "").toLowerCase().includes(q)
         );
       });
 
@@ -24,7 +25,7 @@ export default function HistoriquePanel({
       <p style={styles.panelTitle}>Historique des messages générés</p>
       <input
         style={styles.searchInput}
-        placeholder="Rechercher par texte ou date..."
+        placeholder="Rechercher par texte, date ou auteur..."
         value={recherche}
         onChange={(e) => onRechercheChange(e.target.value)}
       />
@@ -34,12 +35,15 @@ export default function HistoriquePanel({
       {historiqueFiltre.map((h) => (
         <div key={h.id} style={styles.histItem}>
           <div style={styles.histTop}>
-            <span style={styles.histDate}>{formaterDate(h.date)}</span>
+            <span style={styles.histDate}>
+              {formaterDate(h.date)}
+              {h.auteur ? ` — par ${h.auteur}` : ""}
+            </span>
             <div style={styles.histActions}>
               <button
                 style={{ ...styles.linkBtn, color: "var(--rouge)" }}
                 className="hist-action-btn"
-                onClick={() => onCharger(h.texte)}
+                onClick={() => onCharger(h)}
               >
                 Charger dans le formulaire
               </button>
