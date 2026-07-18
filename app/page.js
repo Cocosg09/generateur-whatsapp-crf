@@ -1,191 +1,33 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
-import {
-  nouveauPoste,
-  nouvelIntervenant,
-  extraireDuTableauTexte,
-  construireMessage,
-  parserMessage,
-  serialiserPostes,
-  restaurerPostes,
-} from "@/lib/dps";
+import { construireMessage, parserMessage, restaurerPostes } from "@/lib/dps";
 import { styles } from "./components/styles";
 import PosteCard from "./components/PosteCard";
 import HistoriquePanel from "./components/HistoriquePanel";
 import ModelesPanel from "./components/ModelesPanel";
 import MessageEditor from "./components/MessageEditor";
 import ImportOrdreMission from "./components/ImportOrdreMission";
-
-const BROUILLON_KEY = "crf-postes-brouillon";
+import { useBrouillon } from "./hooks/useBrouillon";
+import { usePostes } from "./hooks/usePostes";
+import { useModeles } from "./hooks/useModeles";
+import { useHistorique } from "./hooks/useHistorique";
+import { useMessage } from "./hooks/useMessage";
+import { useUtilisateur } from "./hooks/useUtilisateur";
 
 export default function Home() {
-  const router = useRouter();
-  const [postes, setPostes] = useState([nouveauPoste()]);
-  const [message, setMessage] = useState("");
+  const { postes, setPostes, effacerBrouillon } = useBrouillon();
+  const postesActions = usePostes({ postes, setPostes });
+  const modeles = useModeles({ setPostes });
+  const historique = useHistorique();
+  const { message, setMessage, desynchronise, setDesynchronise, resynchroniser } =
+    useMessage(postes);
+  const { moi, peutHistorique, peutModeles, seDeconnecter } = useUtilisateur();
+
   const [copied, setCopied] = useState(false);
-  const [modeles, setModeles] = useState([]);
-  const [historique, setHistorique] = useState([]);
-  const [moi, setMoi] = useState(null);
-  const [afficherHistorique, setAfficherHistorique] = useState(false);
-  const [afficherImportPdf, setAfficherImportPdf] = useState(false);
-  const [preview, setPreview] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [rechercheHistorique, setRechercheHistorique] = useState("");
-  const [desynchronise, setDesynchronise] = useState(false);
-  const [dernierApercuSynchronise, setDernierApercuSynchronise] = useState("");
-
-  const dernierEnregistreRef = useRef("");
-  const brouillonChargeRef = useRef(false);
-
-  useEffect(() => {
-    fetch("/api/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then(setMoi)
-      .catch(() => setMoi(null));
-
-    fetch("/api/modeles")
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setModeles)
-      .catch(() => setModeles([]));
-
-    fetch("/api/historique")
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setHistorique)
-      .catch(() => setHistorique([]));
-
-    try {
-      const brouillon = localStorage.getItem(BROUILLON_KEY);
-      if (brouillon) {
-        const parsed = JSON.parse(brouillon);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Restauration ponctuelle depuis localStorage au montage : pas de
-          // re-render en cascade, ce n'est pas le cas visé par la règle.
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setPostes(parsed);
-        }
-      }
-    } catch {
-      // brouillon illisible, on ignore
-    }
-    brouillonChargeRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!brouillonChargeRef.current) return;
-    try {
-      localStorage.setItem(BROUILLON_KEY, JSON.stringify(postes));
-    } catch {
-      // stockage indisponible (mode privé, quota...), on ignore
-    }
-  }, [postes]);
-
-  async function enregistrerModele(p) {
-    const nom = prompt("Nom du modèle (ex: PAPS Pamiers)");
-    if (!nom) return;
-
-    const existant = modeles.find(
-      (m) => m.nom.trim().toLowerCase() === nom.trim().toLowerCase()
-    );
-    if (
-      existant &&
-      !confirm(`Un modèle "${existant.nom}" existe déjà. Le mettre à jour ?`)
-    ) {
-      return;
-    }
-
-    const nouveauModele = {
-      id: existant ? existant.id : crypto.randomUUID(),
-      nom,
-      heureRdv: p.heureRdv,
-      lieuRdv: p.lieuRdv,
-      lieuPoste: p.lieuPoste,
-      contacts: p.contacts,
-      vehicule: p.vehicule,
-    };
-    const res = await fetch("/api/modeles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nouveauModele),
-    });
-    if (res.ok) {
-      setModeles(await res.json());
-    } else {
-      alert("Impossible d'enregistrer le modèle, réessayez plus tard.");
-    }
-  }
-
-  function chargerModele(posteId, modeleId) {
-    const m = modeles.find((x) => x.id === modeleId);
-    if (!m) return;
-    setPostes((prev) =>
-      prev.map((p) =>
-        p.id === posteId
-          ? {
-              ...p,
-              heureRdv: m.heureRdv,
-              lieuRdv: m.lieuRdv,
-              lieuPoste: m.lieuPoste,
-              contacts: m.contacts,
-              vehicule: m.vehicule,
-            }
-          : p
-      )
-    );
-  }
-
-  async function supprimerModele(modeleId) {
-    if (!confirm("Supprimer ce modèle ?")) return;
-    const res = await fetch("/api/modeles", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: modeleId }),
-    });
-    if (res.ok) {
-      setModeles(await res.json());
-    } else {
-      alert("Impossible de supprimer le modèle, réessayez plus tard.");
-    }
-  }
-
-  function updatePoste(id, field, value) {
-    setPostes((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p))
-    );
-  }
-
-  function ajouterPoste() {
-    setPostes((prev) => [...prev, nouveauPoste()]);
-  }
-
-  function dupliquerPoste(posteId) {
-    setPostes((prev) => {
-      const idx = prev.findIndex((p) => p.id === posteId);
-      if (idx === -1) return prev;
-      const copie = {
-        ...prev[idx],
-        id: crypto.randomUUID(),
-        poste: prev[idx].poste ? `${prev[idx].poste} (copie)` : "",
-        intervenants: prev[idx].intervenants.map((i) => ({ ...i })),
-      };
-      const next = [...prev];
-      next.splice(idx + 1, 0, copie);
-      return next;
-    });
-  }
-
-  function deplacerPoste(posteId, direction) {
-    setPostes((prev) => {
-      const idx = prev.findIndex((p) => p.id === posteId);
-      const cible = idx + direction;
-      if (idx === -1 || cible < 0 || cible >= prev.length) return prev;
-      const next = [...prev];
-      [next[idx], next[cible]] = [next[cible], next[idx]];
-      return next;
-    });
-  }
+  const [afficherImportPdf, setAfficherImportPdf] = useState(false);
 
   function reinitialiser() {
     if (
@@ -193,170 +35,13 @@ export default function Home() {
         "Réinitialiser le formulaire ? Toutes les données saisies seront perdues."
       )
     ) {
-      setPostes([nouveauPoste()]);
+      postesActions.reinitialiserPostes();
       setMessage("");
       setCopied(false);
       setSubmitAttempted(false);
-      setPreview({});
       setDesynchronise(false);
-      try {
-        localStorage.removeItem(BROUILLON_KEY);
-      } catch {
-        // stockage indisponible, on ignore
-      }
+      effacerBrouillon();
     }
-  }
-
-  function supprimerPoste(id) {
-    setPostes((prev) => prev.filter((p) => p.id !== id));
-  }
-
-  function updateIntervenant(posteId, index, field, value) {
-    setPostes((prev) =>
-      prev.map((p) => {
-        if (p.id !== posteId) return p;
-        const next = [...p.intervenants];
-        next[index] = { ...next[index], [field]: value };
-        return { ...p, intervenants: next };
-      })
-    );
-  }
-
-  function addIntervenant(posteId) {
-    setPostes((prev) =>
-      prev.map((p) =>
-        p.id === posteId
-          ? { ...p, intervenants: [...p.intervenants, nouvelIntervenant()] }
-          : p
-      )
-    );
-  }
-
-  function removeIntervenant(posteId, index) {
-    setPostes((prev) =>
-      prev.map((p) =>
-        p.id === posteId
-          ? { ...p, intervenants: p.intervenants.filter((_, i) => i !== index) }
-          : p
-      )
-    );
-  }
-
-  function importerPostesDepuisOrdreMission(postesDetectes) {
-    const nouveaux = postesDetectes.map((p) => ({
-      ...nouveauPoste(),
-      poste: p.poste || "",
-      horaires: p.horaires || "",
-      lieuPoste: p.lieuPoste || "",
-      contacts: p.contacts || "",
-      intervenants:
-        p.intervenants.length > 0
-          ? p.intervenants.map((i) => ({ ...i }))
-          : [nouvelIntervenant()],
-    }));
-    setPostes((prev) => {
-      const posteInitialVide =
-        prev.length === 1 &&
-        !prev[0].poste.trim() &&
-        !prev[0].horaires.trim() &&
-        !prev[0].lieuPoste.trim() &&
-        !prev[0].contacts.trim() &&
-        prev[0].intervenants.every((i) => !i.nom.trim());
-      return posteInitialVide ? nouveaux : [...prev, ...nouveaux];
-    });
-  }
-
-  function extraireDuTableau(posteId) {
-    const poste = postes.find((p) => p.id === posteId);
-    if (!poste) return;
-    const resultat = extraireDuTableauTexte(poste.texteCollé);
-    setPreview((prev) => ({ ...prev, [posteId]: resultat }));
-  }
-
-  function confirmerExtraction(posteId) {
-    const p = preview[posteId];
-    if (!p) return;
-    setPostes((prev) =>
-      prev.map((x) =>
-        x.id === posteId
-          ? {
-              ...x,
-              poste: p.poste || x.poste,
-              horaires: p.horaires || x.horaires,
-              intervenants: p.intervenants.length > 0 ? p.intervenants : x.intervenants,
-            }
-          : x
-      )
-    );
-    setPreview((prev) => {
-      const next = { ...prev };
-      delete next[posteId];
-      return next;
-    });
-  }
-
-  function annulerExtraction(posteId) {
-    setPreview((prev) => {
-      const next = { ...prev };
-      delete next[posteId];
-      return next;
-    });
-  }
-
-  const apercu = useMemo(() => construireMessage(postes), [postes]);
-
-  // Synchronise le message avec le formulaire pendant le rendu (plutôt que
-  // dans un effet, cf. https://react.dev/learn/you-might-not-need-an-effect),
-  // sauf si l'utilisateur a modifié le texte à la main (cf. onChange du
-  // textarea, qui positionne `desynchronise`).
-  if (apercu !== dernierApercuSynchronise) {
-    setDernierApercuSynchronise(apercu);
-    if (!desynchronise) {
-      setMessage(apercu);
-    }
-  }
-
-  function resynchroniser() {
-    setMessage(apercu);
-    setDesynchronise(false);
-  }
-
-  async function sauvegarderDansHistoriqueSiNecessaire() {
-    if (message === dernierEnregistreRef.current) return;
-    dernierEnregistreRef.current = message;
-    const entree = {
-      id: crypto.randomUUID(),
-      texte: message,
-      date: new Date().toISOString(),
-      postes: serialiserPostes(postes),
-    };
-    const res = await fetch("/api/historique", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(entree),
-    });
-    if (res.ok) {
-      setHistorique(await res.json());
-    }
-  }
-
-  async function supprimerDeLHistorique(id) {
-    if (!confirm("Supprimer ce message de l'historique ?")) return;
-    const res = await fetch("/api/historique", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-    if (res.ok) {
-      setHistorique(await res.json());
-    } else {
-      alert("Impossible de supprimer ce message, réessayez plus tard.");
-    }
-  }
-
-  function copierDepuisHistorique(texte) {
-    navigator.clipboard.writeText(texte);
-    alert("Message copié !");
   }
 
   function chargerDepuisHistorique(entree) {
@@ -376,37 +61,28 @@ export default function Home() {
     setMessage(entree.texte);
     setDesynchronise(construireMessage(nouveauxPostes) !== entree.texte);
     setSubmitAttempted(false);
-    setAfficherHistorique(false);
+    historique.setAfficher(false);
   }
 
   function copierMessage() {
     setSubmitAttempted(true);
     navigator.clipboard.writeText(message);
     setCopied(true);
-    sauvegarderDansHistoriqueSiNecessaire();
+    historique.enregistrerSiNecessaire({ texte: message, postes });
   }
 
   function envoyerWhatsApp() {
     setSubmitAttempted(true);
     const texteEncode = encodeURIComponent(message);
     window.open(`https://api.whatsapp.com/send?text=${texteEncode}`, "_blank");
-    sauvegarderDansHistoriqueSiNecessaire();
+    historique.enregistrerSiNecessaire({ texte: message, postes });
   }
 
   function imprimer() {
     setSubmitAttempted(true);
-    sauvegarderDansHistoriqueSiNecessaire();
+    historique.enregistrerSiNecessaire({ texte: message, postes });
     window.print();
   }
-
-  async function seDeconnecter() {
-    await fetch("/api/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
-  }
-
-  const peutHistorique = !moi || moi.role === "admin" || moi.permissions?.historique;
-  const peutModeles = !moi || moi.role === "admin" || moi.permissions?.modeles;
 
   return (
     <div style={styles.page}>
@@ -422,7 +98,7 @@ export default function Home() {
           {peutHistorique && (
             <button
               style={styles.ghostBtn}
-              onClick={() => setAfficherHistorique(!afficherHistorique)}
+              onClick={() => historique.setAfficher((v) => !v)}
             >
               Historique
             </button>
@@ -445,21 +121,21 @@ export default function Home() {
 
       {afficherImportPdf && (
         <ImportOrdreMission
-          onConfirmer={importerPostesDepuisOrdreMission}
+          onConfirmer={postesActions.importerPostesDepuisOrdreMission}
           onClose={() => setAfficherImportPdf(false)}
         />
       )}
 
       <main style={styles.main} className="dps-layout">
         <div className="form-column">
-          {peutHistorique && afficherHistorique && (
+          {peutHistorique && historique.afficher && (
             <HistoriquePanel
-              historique={historique}
-              recherche={rechercheHistorique}
-              onRechercheChange={setRechercheHistorique}
+              historique={historique.historique}
+              recherche={historique.recherche}
+              onRechercheChange={historique.setRecherche}
               onCharger={chargerDepuisHistorique}
-              onCopier={copierDepuisHistorique}
-              onSupprimer={supprimerDeLHistorique}
+              onCopier={historique.copier}
+              onSupprimer={historique.supprimer}
             />
           )}
 
@@ -469,29 +145,31 @@ export default function Home() {
               poste={p}
               index={posteIdx}
               total={postes.length}
-              modeles={modeles}
-              preview={preview[p.id]}
+              modeles={modeles.modeles}
+              preview={postesActions.preview[p.id]}
               submitAttempted={submitAttempted}
-              onUpdatePoste={updatePoste}
-              onUpdateIntervenant={updateIntervenant}
-              onAddIntervenant={addIntervenant}
-              onRemoveIntervenant={removeIntervenant}
-              onMove={deplacerPoste}
-              onDuplicate={dupliquerPoste}
-              onRemove={supprimerPoste}
-              onChargerModele={chargerModele}
-              onEnregistrerModele={enregistrerModele}
-              onExtraire={extraireDuTableau}
-              onConfirmerExtraction={confirmerExtraction}
-              onAnnulerExtraction={annulerExtraction}
+              onUpdatePoste={postesActions.updatePoste}
+              onUpdateIntervenant={postesActions.updateIntervenant}
+              onAddIntervenant={postesActions.addIntervenant}
+              onRemoveIntervenant={postesActions.removeIntervenant}
+              onMove={postesActions.deplacerPoste}
+              onDuplicate={postesActions.dupliquerPoste}
+              onRemove={postesActions.supprimerPoste}
+              onChargerModele={modeles.chargerModele}
+              onEnregistrerModele={modeles.enregistrerModele}
+              onExtraire={postesActions.extraireDuTableau}
+              onConfirmerExtraction={postesActions.confirmerExtraction}
+              onAnnulerExtraction={postesActions.annulerExtraction}
             />
           ))}
 
-          <button style={styles.btnDashed} className="no-print" onClick={ajouterPoste}>
+          <button style={styles.btnDashed} className="no-print" onClick={postesActions.ajouterPoste}>
             + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
           </button>
 
-          {peutModeles && <ModelesPanel modeles={modeles} onSupprimer={supprimerModele} />}
+          {peutModeles && (
+            <ModelesPanel modeles={modeles.modeles} onSupprimer={modeles.supprimerModele} />
+          )}
         </div>
 
         <div className="message-column">
