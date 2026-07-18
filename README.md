@@ -2,8 +2,8 @@
 
 Application web pour préparer et diffuser rapidement le message WhatsApp de
 briefing d'un Dispositif Prévisionnel de Secours (DPS) : postes, horaires,
-intervenants, matériel, véhicules — avec historique, modèles réutilisables et
-export PDF.
+intervenants, matériel, véhicules — avec historique, suggestions et catalogue
+de moyens réutilisables, et export PDF.
 
 ## Fonctionnalités
 
@@ -13,9 +13,12 @@ export PDF.
   intervenants / horaires) et l'application propose une extraction du nom du
   poste, des horaires et des intervenants, à confirmer avant application.
 - **Intervenants** : rôle, nom, statut conducteur (VL ou VPSP).
-- **Modèles réutilisables** : enregistrez les infos récurrentes d'un poste
-  (RDV, lieu, contacts, véhicule) sous un nom, rechargez-les ou mettez-les à
-  jour en ré-enregistrant sous le même nom.
+- **Suggestions de champs** : les champs heure de RDV, lieu de RDV, lieu du
+  poste et contacts proposent un menu déroulant de valeurs fréquentes (géré
+  depuis `/admin`), tout en restant des champs texte libres.
+- **Catalogue de moyens** : un moyen (véhicule + lot de matériel associé),
+  géré depuis `/admin`, se sélectionne sur un poste pour remplir d'un coup les
+  champs véhicule et matériel.
 - **Message final éditable en direct** : le message est généré automatiquement
   depuis le formulaire (les champs non remplis sont omis), mais reste éditable
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du
@@ -39,13 +42,14 @@ export PDF.
   champs d'un poste et les boutons).
 - **Comptes individuels et rôles** : chaque utilisateur a son propre
   identifiant/mot de passe ; un rôle `admin` gère les comptes et l'accès par
-  fonctionnalité (postes, historique, modèles) des comptes `user` depuis une
-  page `/admin`.
+  fonctionnalité (postes, historique) des comptes `user` depuis une page
+  `/admin`.
 
 ## Prérequis
 
 - Node.js 20.9+ (Next.js 16)
-- Une instance Redis (stockage de l'historique et des modèles)
+- Une instance Redis (stockage de l'historique, du catalogue de moyens et des
+  listes de suggestions)
 
 ## Variables d'environnement
 
@@ -57,7 +61,7 @@ versionné) :
 | `SESSION_SECRET`          | Clé secrète (chaîne aléatoire longue) signant les cookies de session (HMAC)    |
 | `INITIAL_ADMIN_USERNAME`  | Identifiant du compte admin créé automatiquement au premier login              |
 | `INITIAL_ADMIN_PASSWORD`  | Mot de passe de ce compte admin (à changer/retirer une fois le compte créé)    |
-| `REDIS_URL`               | URL de connexion Redis (utilisateurs, historique, modèles)                     |
+| `REDIS_URL`               | URL de connexion Redis (utilisateurs, historique, moyens, listes de suggestions) |
 
 Le tout premier login avec `INITIAL_ADMIN_USERNAME`/`INITIAL_ADMIN_PASSWORD`
 crée le compte admin correspondant dans Redis (idempotent : les logins
@@ -88,14 +92,13 @@ npm test        # tests unitaires (node:test) sur lib/dps.js
 
 ```
 app/
-  page.js                   # orchestration de l'état (postes, historique, modèles, message)
+  page.js                   # orchestration de l'état (postes, historique, moyens, message)
   layout.js                 # layout racine, polices, métadonnées, Speed Insights
   icon.js                   # favicon généré (Next.js metadata route)
   components/                # composants UI
     PosteCard.js               # formulaire d'un poste (horaires, intervenants, matériel, véhicule)
     MessageEditor.js            # message final éditable + resynchronisation
     HistoriquePanel.js          # liste/recherche/rechargement de l'historique
-    ModelesPanel.js              # enregistrement/rechargement des modèles
     ImportOrdreMission.js         # import PDF, détection de postes (pdfjs-dist)
     styles.js                     # styles partagés (objets JS inline, sauf /login en Tailwind)
   api/                        # routes API — persistance Redis
@@ -103,12 +106,15 @@ app/
     logout/route.js               # suppression du cookie de session
     me/route.js                    # identité/permissions de l'utilisateur courant
     historique/route.js           # CRUD historique (GET/POST/DELETE, permission requise)
-    modeles/route.js               # CRUD modèles réutilisables (permission requise)
+    moyens/route.js                # CRUD catalogue de moyens (lecture: permission postes, écriture: admin)
+    listes-champs/route.js         # listes de suggestions par champ (lecture: permission postes, écriture: admin)
     admin/users/route.js           # liste/création de comptes (admin only)
     admin/users/[username]/route.js # édition/suppression d'un compte (admin only)
   login/page.js               # page de connexion (identifiant + mot de passe)
   admin/page.js                # page d'administration des comptes (redirige les non-admins)
   admin/components/UsersTable.js # UI de gestion des comptes
+  admin/components/MoyensTable.js # UI de gestion du catalogue de moyens
+  admin/components/ListesChampsTable.js # UI de gestion des listes de suggestions
 lib/
   dps.js                     # logique métier pure (extraction, génération/parsing du message)
   dps.test.js                 # tests unitaires (node:test)
@@ -166,7 +172,8 @@ Audit réalisé après la mise en place des comptes individuels (voir aussi
 - **Historique git** vérifié : aucun secret (mot de passe, clé) n'y a été
   committé.
 - **Risque accepté, documenté, non corrigé** : les écritures Redis
-  (historique, modèles, utilisateurs) suivent un schéma lire-modifier-écrire
+  (historique, moyens, listes de suggestions, utilisateurs) suivent un schéma
+  lire-modifier-écrire
   sans transaction (`WATCH`/`MULTI`) — deux écritures concurrentes peuvent
   en théorie s'écraser. Impact jugé faible pour le volume d'usage réel de
   cet outil interne ; à corriger si l'usage simultané augmente.
@@ -183,8 +190,8 @@ Audit réalisé après la mise en place des comptes individuels (voir aussi
   évolution (texte seul) repassent par un parsing par expressions régulières
   du texte final, sensible aux changements de format du message.
 - Pas de gestion de concurrence avancée sur Redis : deux utilisateurs
-  modifiant l'historique/les modèles au même moment peuvent, en théorie,
-  écraser une écriture concurrente.
+  modifiant l'historique/le catalogue de moyens au même moment peuvent, en
+  théorie, écraser une écriture concurrente.
 - Le rate limiting du login est stocké en mémoire du processus : en
   environnement serverless (Vercel), chaque instance a son propre compteur,
   ce qui affaiblit la protection contre le brute force (un stockage Redis

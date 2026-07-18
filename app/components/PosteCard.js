@@ -1,11 +1,37 @@
 import { ROLES_COURANTS } from "@/lib/dps";
 import { styles } from "./styles";
 
+// Menu déroulant de suggestions (géré depuis /admin) au-dessus d'un champ
+// texte libre : choisir une valeur la recopie dans le champ, qui reste
+// modifiable à la main ensuite.
+function Suggestions({ valeurs, onChoisir }) {
+  if (!valeurs || valeurs.length === 0) return null;
+  return (
+    <select
+      style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
+      defaultValue=""
+      onChange={(e) => {
+        if (e.target.value) onChoisir(e.target.value);
+        e.target.value = "";
+      }}
+    >
+      <option value="" disabled>
+        Suggestions…
+      </option>
+      {valeurs.map((v) => (
+        <option key={v} value={v}>
+          {v}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export default function PosteCard({
   poste: p,
   index: posteIdx,
   total,
-  modeles,
+  listes,
   moyens,
   preview,
   submitAttempted,
@@ -16,9 +42,7 @@ export default function PosteCard({
   onMove,
   onDuplicate,
   onRemove,
-  onChargerModele,
   onChargerMoyen,
-  onEnregistrerModele,
   onExtraire,
   onConfirmerExtraction,
   onAnnulerExtraction,
@@ -64,29 +88,6 @@ export default function PosteCard({
             </button>
           )}
         </div>
-      </div>
-
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <select
-          style={{ ...styles.input, width: "auto" }}
-          defaultValue=""
-          onChange={(e) => {
-            if (e.target.value) onChargerModele(p.id, e.target.value);
-            e.target.value = "";
-          }}
-        >
-          <option value="" disabled>
-            Charger un modèle...
-          </option>
-          {modeles.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.nom}
-            </option>
-          ))}
-        </select>
-        <button style={styles.btnSecondary} onClick={() => onEnregistrerModele(p)}>
-          Enregistrer comme modèle
-        </button>
       </div>
 
       <div style={styles.fieldGroup}>
@@ -162,6 +163,10 @@ export default function PosteCard({
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Heure de RDV</label>
+          <Suggestions
+            valeurs={listes.heureRdv}
+            onChoisir={(v) => onUpdatePoste(p.id, "heureRdv", v)}
+          />
           <input
             style={styles.input}
             placeholder="ex : 11h30"
@@ -171,6 +176,10 @@ export default function PosteCard({
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
+          <Suggestions
+            valeurs={listes.lieuRdv}
+            onChoisir={(v) => onUpdatePoste(p.id, "lieuRdv", v)}
+          />
           <input
             style={styles.input}
             placeholder="ex : Nouveau PÔLE"
@@ -182,6 +191,10 @@ export default function PosteCard({
           <label style={styles.label}>
             Lieu du poste (adresse) <span style={styles.required}>*</span>
           </label>
+          <Suggestions
+            valeurs={listes.lieuPoste}
+            onChoisir={(v) => onUpdatePoste(p.id, "lieuPoste", v)}
+          />
           <input
             style={champStyle(p.lieuPoste)}
             value={p.lieuPoste}
@@ -192,6 +205,10 @@ export default function PosteCard({
           <label style={styles.label}>
             Contact(s) sur place <span style={styles.required}>*</span>
           </label>
+          <Suggestions
+            valeurs={listes.contacts}
+            onChoisir={(v) => onUpdatePoste(p.id, "contacts", v)}
+          />
           <input
             style={champStyle(p.contacts)}
             placeholder="Nom (06...) et Nom (06...)"
