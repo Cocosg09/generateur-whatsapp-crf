@@ -28,6 +28,9 @@ export PDF.
   détecte les postes, horaires, lieux et intervenants pour pré-remplir le
   formulaire (à confirmer avant application).
 - **Export** : copie presse-papiers, envoi direct vers WhatsApp, impression /
+  export PDF avec une mise en page dédiée (marges A4, en-tête Croix-Rouge,
+  typographie adaptée au papier, pied de page).
+- **Accès protégé** par mot de passe partagé (cookie de session).
   export PDF avec mise en page dédiée.
 - **Mise en page adaptative** : colonne unique sur petit écran, deux colonnes
   (formulaire + message) avec colonne message collante à partir de 1024px de
