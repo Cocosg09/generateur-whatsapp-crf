@@ -20,6 +20,9 @@ de moyens réutilisables, et export PDF.
 - **Catalogue de moyens** : un moyen (véhicule + lot de matériel associé),
   géré depuis `/admin`, se recherche dans le champ véhicule d'un poste ; le
   sélectionner remplit d'un coup les champs véhicule et matériel.
+- **Calcul de l'heure de RDV** : à partir du début des horaires du poste,
+  suggère une heure de RDV (avance en minutes réglable, 30 min par défaut),
+  qui reste à confirmer/ajuster manuellement.
 - **Message final éditable en direct** : le message est généré automatiquement
   depuis le formulaire (les champs non remplis sont omis), mais reste éditable
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du

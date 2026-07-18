@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ROLES_COURANTS } from "@/lib/dps";
+import { ROLES_COURANTS, AVANCE_RDV_MINUTES_PAR_DEFAUT, calculerHeureRdv } from "@/lib/dps";
 import { styles } from "./styles";
 
 // Champ texte libre avec suggestions (gérées depuis /admin) façon barre de
@@ -101,6 +101,9 @@ export default function PosteCard({
   onConfirmerExtraction,
   onAnnulerExtraction,
 }) {
+  const [avanceRdv, setAvanceRdv] = useState(AVANCE_RDV_MINUTES_PAR_DEFAUT);
+  const heureRdvCalculee = calculerHeureRdv(p.horaires, Number(avanceRdv) || 0);
+
   function champStyle(valeur) {
     return submitAttempted && !valeur.trim()
       ? { ...styles.input, ...styles.inputInvalide }
@@ -224,6 +227,28 @@ export default function PosteCard({
             options={listes.heureRdv}
             onChange={(v) => onUpdatePoste(p.id, "heureRdv", v)}
           />
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              style={{ ...styles.input, width: "60px", padding: "4px 6px" }}
+              value={avanceRdv}
+              onChange={(e) => setAvanceRdv(e.target.value)}
+              aria-label="Avance en minutes avant le début du poste"
+            />
+            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
+              min avant le début
+            </span>
+            <button
+              type="button"
+              style={styles.linkBtn}
+              disabled={!heureRdvCalculee}
+              onClick={() => onUpdatePoste(p.id, "heureRdv", heureRdvCalculee)}
+            >
+              Calculer{heureRdvCalculee ? ` (${heureRdvCalculee})` : ""}
+            </button>
+          </div>
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
