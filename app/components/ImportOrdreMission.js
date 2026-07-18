@@ -15,11 +15,11 @@ export default function ImportOrdreMission({ onConfirmer }) {
     setErreur("");
     setPostesDetectes(null);
     try {
-      const { extraireLignesDuPdf } = await import("@/lib/pdfLignes");
+      const { extraireItemsDuPdf } = await import("@/lib/pdfLignes");
       const { extraireOrdreMission } = await import("@/lib/dps");
       const buffer = await fichier.arrayBuffer();
-      const lignes = await extraireLignesDuPdf(buffer);
-      const postes = extraireOrdreMission(lignes.join("\n"));
+      const pages = await extraireItemsDuPdf(buffer);
+      const postes = pages.flatMap((items) => extraireOrdreMission(items));
       if (postes.length === 0) {
         setErreur(
           "Aucune information exploitable n'a été trouvée dans ce PDF. Vérifiez qu'il s'agit bien d'un ordre de mission généré par le logiciel de la Croix-Rouge."
