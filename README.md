@@ -20,6 +20,8 @@ de moyens réutilisables, et export PDF.
 - **Catalogue de moyens** : un moyen (véhicule + lot de matériel associé),
   géré depuis `/admin`, se recherche dans le champ véhicule d'un poste ; le
   sélectionner remplit d'un coup les champs véhicule et matériel.
+- **Pied de message** : texte commun ajouté à la fin de tous les messages
+  générés (rappel véhicules par défaut), géré et modifiable depuis `/admin`.
 - **Calcul de l'heure de RDV** : à partir du début des horaires du poste,
   suggère une heure de RDV (avance en minutes réglable, 30 min par défaut),
   qui reste à confirmer/ajuster manuellement. L'avance peut aussi être
@@ -41,9 +43,10 @@ de moyens réutilisables, et export PDF.
   header, chargez un PDF Croix-Rouge ; l'appli détecte les postes, horaires,
   lieux et intervenants pour pré-remplir le formulaire (à confirmer avant
   application).
-- **Export** : copie presse-papiers, envoi direct vers WhatsApp, impression /
-  export PDF avec une mise en page dédiée (marges A4, en-tête Croix-Rouge,
-  typographie adaptée au papier, pied de page).
+- **Export** : copie presse-papiers, envoi direct vers WhatsApp (ou via un QR
+  code à scanner avec un téléphone), impression / export PDF avec une mise en
+  page dédiée (marges A4, en-tête Croix-Rouge, typographie adaptée au papier,
+  pied de page).
 - **Utilisable en mobilité** : mise en page à une colonne, champs et cibles
   tactiles adaptés sur téléphone (< 640px pour l'en-tête, < 480px pour les
   champs d'un poste et les boutons).
@@ -108,6 +111,7 @@ app/
     MessageEditor.js            # message final éditable + resynchronisation
     HistoriquePanel.js          # liste/recherche/rechargement de l'historique
     ImportOrdreMission.js         # import PDF, détection de postes (pdfjs-dist)
+    QrCodeModal.js                 # QR code du lien WhatsApp, à scanner avec un téléphone
     styles.js                     # styles partagés (objets JS inline, sauf /login en Tailwind)
   api/                        # routes API — persistance Redis
     login/route.js               # authentification (rate limiting par IP, cookie de session signé)
@@ -116,6 +120,7 @@ app/
     historique/route.js           # CRUD historique (GET/POST/DELETE, permission requise)
     moyens/route.js                # CRUD catalogue de moyens (lecture: permission postes, écriture: admin)
     listes-champs/route.js         # listes de suggestions par champ (lecture: permission postes, écriture: admin)
+    pied-message/route.js          # pied de message commun (lecture: permission postes, écriture: admin)
     admin/users/route.js           # liste/création de comptes (admin only)
     admin/users/[username]/route.js # édition/suppression d'un compte (admin only)
   login/page.js               # page de connexion (identifiant + mot de passe)
@@ -123,6 +128,7 @@ app/
   admin/components/UsersTable.js # UI de gestion des comptes
   admin/components/MoyensTable.js # UI de gestion du catalogue de moyens
   admin/components/ListesChampsTable.js # UI de gestion des listes de suggestions
+  admin/components/PiedMessageForm.js # UI d'édition du pied de message
 lib/
   dps.js                     # logique métier pure (extraction, génération/parsing du message)
   dps.test.js                 # tests unitaires (node:test)
