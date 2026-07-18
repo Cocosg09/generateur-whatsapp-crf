@@ -131,12 +131,48 @@ externe, ex. Upstash). Après le premier déploiement, se connecter une fois
 avec le compte admin initial pour le matérialiser dans Redis, puis créer les
 comptes de l'équipe depuis `/admin`.
 
+## Sécurité
+
+Audit réalisé après la mise en place des comptes individuels (voir aussi
+`.github/workflows/ci.yml` pour le lint/tests/build en CI) :
+
+- **En-têtes de sécurité** (`next.config.mjs`) : CSP, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`,
+  `Strict-Transport-Security`. La CSP autorise `style-src 'unsafe-inline'`
+  car l'app utilise des styles React inline (`app/components/styles.js`)
+  plutôt que des classes CSS — un passage à un CSP par nonce demanderait de
+  rendre toute l'app dynamiquement (cf. doc Next.js sur les nonces CSP) et
+  n'a pas été jugé nécessaire pour un outil interne.
+- **Rate limiting du login** (`lib/rate-limit.js`) : compteur par IP basé
+  sur Redis (`INCR`/`EXPIRE`) plutôt qu'un `Map` en mémoire — un `Map` ne
+  fonctionne pas correctement sur Vercel, où chaque instance serverless a
+  sa propre mémoire (le compteur repartait à zéro sur chaque nouvelle
+  instance, affaiblissant la protection anti-bruteforce).
+- **Révocation immédiate des comptes désactivés** (`lib/session-guard.js`) :
+  la désactivation d'un compte par un admin est vérifiée en base à chaque
+  requête API, pas seulement dans le cookie signé (voir Limitations
+  connues pour la nuance avec les changements de permission/rôle).
+- **Dépendance `vercel` déplacée en devDependency** : elle n'est utilisée
+  par aucun script ni import du code, mais entraînait ~30 vulnérabilités
+  npm (dont plusieurs "high") via son arbre de dépendances (`tar`,
+  `undici`, `path-to-regexp`...). `npm audit --omit=dev` ne remonte plus
+  que 3 vulnérabilités modérées, toutes liées à la dépendance `postcss` de
+  Next.js lui-même (bundlée, hors de notre contrôle direct).
+- **Historique git** vérifié : aucun secret (mot de passe, clé) n'y a été
+  committé.
+- **Risque accepté, documenté, non corrigé** : les écritures Redis
+  (historique, modèles, utilisateurs) suivent un schéma lire-modifier-écrire
+  sans transaction (`WATCH`/`MULTI`) — deux écritures concurrentes peuvent
+  en théorie s'écraser. Impact jugé faible pour le volume d'usage réel de
+  cet outil interne ; à corriger si l'usage simultané augmente.
+
 ## Limitations connues
 
-- Les permissions par fonctionnalité sont embarquées dans le cookie de
-  session signé (pas de lecture Redis à chaque requête) : un changement de
-  permission par l'admin ne prend effet qu'à la prochaine connexion de
-  l'utilisateur concerné.
+- Les permissions et le rôle sont embarqués dans le cookie de session signé :
+  un changement de permission ou de rôle par l'admin ne prend effet qu'à la
+  prochaine connexion de l'utilisateur concerné. La désactivation d'un
+  compte (`disabled`), elle, est vérifiée en base à chaque requête API
+  (`lib/session-guard.js`) et coupe donc l'accès immédiatement.
 - Le rechargement d'un message depuis l'historique repose sur un parsing par
   expressions régulières du texte final : un changement de format du message
   (émojis, libellés) peut casser ce parsing.
