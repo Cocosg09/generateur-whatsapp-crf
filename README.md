@@ -17,16 +17,18 @@ export PDF.
   (RDV, lieu, contacts, véhicule) sous un nom, rechargez-les ou mettez-les à
   jour en ré-enregistrant sous le même nom.
 - **Message final éditable en direct** : le message est généré automatiquement
-  depuis le formulaire, mais reste éditable à la main ; un bandeau propose de
-  resynchroniser si le texte a divergé du formulaire.
+  depuis le formulaire (les champs non remplis sont omis), mais reste éditable
+  à la main ; un bandeau propose de resynchroniser si le texte a divergé du
+  formulaire. La zone de texte s'agrandit automatiquement avec le contenu.
 - **Historique** : les messages copiés/envoyés/imprimés sont conservés (les 50
   derniers), consultables, cherchables, rechargeables dans le formulaire.
 - **Brouillon local** : le formulaire en cours est sauvegardé dans le
   navigateur (localStorage) pour éviter une perte de saisie en cas de
   rechargement accidentel de la page.
-- **Import d'un ordre de mission PDF** : chargez un PDF Croix-Rouge, l'appli
-  détecte les postes, horaires, lieux et intervenants pour pré-remplir le
-  formulaire (à confirmer avant application).
+- **Import d'un ordre de mission PDF** : depuis une popup accessible dans le
+  header, chargez un PDF Croix-Rouge ; l'appli détecte les postes, horaires,
+  lieux et intervenants pour pré-remplir le formulaire (à confirmer avant
+  application).
 - **Export** : copie presse-papiers, envoi direct vers WhatsApp, impression /
   export PDF avec mise en page dédiée.
 - **Mise en page adaptative** : colonne unique sur petit écran, deux colonnes
@@ -143,3 +145,7 @@ comptes de l'équipe depuis `/admin`.
 - Pas de gestion de concurrence avancée sur Redis : deux utilisateurs
   modifiant l'historique/les modèles au même moment peuvent, en théorie,
   écraser une écriture concurrente.
+- Le rate limiting du login est stocké en mémoire du processus : en
+  environnement serverless (Vercel), chaque instance a son propre compteur,
+  ce qui affaiblit la protection contre le brute force (un stockage Redis
+  serait plus robuste).
