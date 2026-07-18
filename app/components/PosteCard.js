@@ -102,12 +102,39 @@ export default function PosteCard({
   onAnnulerExtraction,
 }) {
   const [avanceRdv, setAvanceRdv] = useState(AVANCE_RDV_MINUTES_PAR_DEFAUT);
+  const [chargementTrajet, setChargementTrajet] = useState(false);
+  const [erreurTrajet, setErreurTrajet] = useState("");
   const heureRdvCalculee = calculerHeureRdv(p.horaires, Number(avanceRdv) || 0);
 
   function champStyle(valeur) {
     return submitAttempted && !valeur.trim()
       ? { ...styles.input, ...styles.inputInvalide }
       : styles.input;
+  }
+
+  async function calculerTrajet() {
+    if (!p.lieuPoste.trim()) return;
+    setErreurTrajet("");
+    setChargementTrajet(true);
+    try {
+      const res = await fetch("/api/trajet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adresse: p.lieuPoste }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErreurTrajet(body.message || "Impossible de calculer le trajet.");
+        return;
+      }
+      setAvanceRdv(body.minutes);
+      const heure = calculerHeureRdv(p.horaires, body.minutes);
+      if (heure) onUpdatePoste(p.id, "heureRdv", heure);
+    } catch {
+      setErreurTrajet("Impossible de calculer le trajet, réessayez plus tard.");
+    } finally {
+      setChargementTrajet(false);
+    }
   }
 
   return (
@@ -249,6 +276,17 @@ export default function PosteCard({
               Calculer{heureRdvCalculee ? ` (${heureRdvCalculee})` : ""}
             </button>
           </div>
+          <button
+            type="button"
+            style={{ ...styles.linkBtn, marginTop: "2px" }}
+            disabled={!p.lieuPoste.trim() || chargementTrajet}
+            onClick={calculerTrajet}
+          >
+            {chargementTrajet ? "Calcul du trajet…" : "Calculer le trajet depuis Pamiers"}
+          </button>
+          {erreurTrajet && (
+            <p style={{ fontSize: "12px", color: "var(--rouge)", margin: 0 }}>{erreurTrajet}</p>
+          )}
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>

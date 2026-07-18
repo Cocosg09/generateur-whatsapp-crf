@@ -22,7 +22,10 @@ de moyens réutilisables, et export PDF.
   sélectionner remplit d'un coup les champs véhicule et matériel.
 - **Calcul de l'heure de RDV** : à partir du début des horaires du poste,
   suggère une heure de RDV (avance en minutes réglable, 30 min par défaut),
-  qui reste à confirmer/ajuster manuellement.
+  qui reste à confirmer/ajuster manuellement. L'avance peut aussi être
+  calculée automatiquement depuis le temps de trajet réel entre le Nouveau
+  Pôle et le lieu du poste (via [OpenRouteService](https://openrouteservice.org),
+  nécessite `ORS_API_KEY`).
 - **Message final éditable en direct** : le message est généré automatiquement
   depuis le formulaire (les champs non remplis sont omis), mais reste éditable
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du
@@ -66,6 +69,7 @@ versionné) :
 | `INITIAL_ADMIN_USERNAME`  | Identifiant du compte admin créé automatiquement au premier login              |
 | `INITIAL_ADMIN_PASSWORD`  | Mot de passe de ce compte admin (à changer/retirer une fois le compte créé)    |
 | `REDIS_URL`               | URL de connexion Redis (utilisateurs, historique, moyens, listes de suggestions) |
+| `ORS_API_KEY`             | Clé API [OpenRouteService](https://openrouteservice.org/dev/#/signup) (gratuite) pour le calcul du temps de trajet depuis le Nouveau Pôle ; fonctionnalité désactivée si absente |
 
 Le tout premier login avec `INITIAL_ADMIN_USERNAME`/`INITIAL_ADMIN_PASSWORD`
 crée le compte admin correspondant dans Redis (idempotent : les logins
