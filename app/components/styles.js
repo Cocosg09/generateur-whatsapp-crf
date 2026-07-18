@@ -324,12 +324,6 @@ export const styles = {
     cursor: "pointer",
     padding: 0,
   },
-  modeleRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "13px",
-  },
   finalBox: { display: "flex", flexDirection: "column", gap: "10px" },
   finalTextarea: {
     width: "100%",

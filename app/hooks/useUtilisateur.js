@@ -20,7 +20,6 @@ export function useUtilisateur() {
   }, []);
 
   const peutHistorique = !moi || moi.role === "admin" || moi.permissions?.historique;
-  const peutModeles = !moi || moi.role === "admin" || moi.permissions?.modeles;
 
   async function seDeconnecter() {
     await fetch("/api/logout", { method: "POST" });
@@ -28,5 +27,5 @@ export function useUtilisateur() {
     router.refresh();
   }
 
-  return { moi, peutHistorique, peutModeles, seDeconnecter };
+  return { moi, peutHistorique, seDeconnecter };
 }

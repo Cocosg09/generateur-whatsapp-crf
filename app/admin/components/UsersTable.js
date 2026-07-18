@@ -6,7 +6,6 @@ import { styles } from "../../components/styles";
 const FONCTIONNALITES = [
   { cle: "postes", label: "Postes / message" },
   { cle: "historique", label: "Historique" },
-  { cle: "modeles", label: "Modèles" },
 ];
 
 function nouveauFormulaire() {
@@ -14,7 +13,7 @@ function nouveauFormulaire() {
     username: "",
     password: "",
     role: "user",
-    permissions: { postes: true, historique: true, modeles: true },
+    permissions: { postes: true, historique: true },
   };
 }
 

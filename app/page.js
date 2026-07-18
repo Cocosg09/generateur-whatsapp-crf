@@ -6,12 +6,12 @@ import { construireMessage, parserMessage, restaurerPostes } from "@/lib/dps";
 import { styles } from "./components/styles";
 import PosteCard from "./components/PosteCard";
 import HistoriquePanel from "./components/HistoriquePanel";
-import ModelesPanel from "./components/ModelesPanel";
 import MessageEditor from "./components/MessageEditor";
 import ImportOrdreMission from "./components/ImportOrdreMission";
 import { useBrouillon } from "./hooks/useBrouillon";
 import { usePostes } from "./hooks/usePostes";
-import { useModeles } from "./hooks/useModeles";
+import { useListesChamps } from "./hooks/useListesChamps";
+import { useMoyens } from "./hooks/useMoyens";
 import { useHistorique } from "./hooks/useHistorique";
 import { useMessage } from "./hooks/useMessage";
 import { useUtilisateur } from "./hooks/useUtilisateur";
@@ -19,11 +19,12 @@ import { useUtilisateur } from "./hooks/useUtilisateur";
 export default function Home() {
   const { postes, setPostes, effacerBrouillon } = useBrouillon();
   const postesActions = usePostes({ postes, setPostes });
-  const modeles = useModeles({ setPostes });
+  const { listes } = useListesChamps();
+  const moyens = useMoyens({ setPostes });
   const historique = useHistorique();
   const { message, setMessage, desynchronise, setDesynchronise, resynchroniser } =
     useMessage(postes);
-  const { moi, peutHistorique, peutModeles, seDeconnecter } = useUtilisateur();
+  const { moi, peutHistorique, seDeconnecter } = useUtilisateur();
 
   const [copied, setCopied] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -145,7 +146,8 @@ export default function Home() {
               poste={p}
               index={posteIdx}
               total={postes.length}
-              modeles={modeles.modeles}
+              listes={listes}
+              moyens={moyens.moyens}
               preview={postesActions.preview[p.id]}
               submitAttempted={submitAttempted}
               onUpdatePoste={postesActions.updatePoste}
@@ -155,8 +157,7 @@ export default function Home() {
               onMove={postesActions.deplacerPoste}
               onDuplicate={postesActions.dupliquerPoste}
               onRemove={postesActions.supprimerPoste}
-              onChargerModele={modeles.chargerModele}
-              onEnregistrerModele={modeles.enregistrerModele}
+              onChargerMoyen={moyens.chargerMoyen}
               onExtraire={postesActions.extraireDuTableau}
               onConfirmerExtraction={postesActions.confirmerExtraction}
               onAnnulerExtraction={postesActions.annulerExtraction}
@@ -166,10 +167,6 @@ export default function Home() {
           <button style={styles.btnDashed} className="no-print" onClick={postesActions.ajouterPoste}>
             + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
           </button>
-
-          {peutModeles && (
-            <ModelesPanel modeles={modeles.modeles} onSupprimer={modeles.supprimerModele} />
-          )}
         </div>
 
         <div className="message-column">
