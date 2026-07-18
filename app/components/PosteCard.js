@@ -37,6 +37,7 @@ export default function PosteCard({
         <div style={styles.posteHeaderActions}>
           <button
             style={styles.arrowBtn}
+            className="arrow-btn"
             disabled={posteIdx === 0}
             onClick={() => onMove(p.id, -1)}
             aria-label="Monter ce poste"
@@ -45,6 +46,7 @@ export default function PosteCard({
           </button>
           <button
             style={styles.arrowBtn}
+            className="arrow-btn"
             disabled={posteIdx === total - 1}
             onClick={() => onMove(p.id, 1)}
             aria-label="Descendre ce poste"
@@ -133,7 +135,7 @@ export default function PosteCard({
         )}
       </div>
 
-      <div style={styles.grid2}>
+      <div style={styles.grid2} className="poste-fields-grid">
         <div style={styles.fieldGroup}>
           <label style={styles.label}>
             Nom du poste <span style={styles.required}>*</span>
@@ -212,9 +214,10 @@ export default function PosteCard({
         <p style={styles.sectionLabel}>Intervenants</p>
         {p.intervenants.map((i, idx) => (
           <div key={idx} style={styles.intervenantRow}>
-            <div style={styles.intervenantMainLine}>
+            <div style={styles.intervenantMainLine} className="intervenant-main-line">
               <select
                 style={{ ...styles.input, width: "170px", flexShrink: 0 }}
+                className="role-select"
                 value={i.role}
                 onChange={(e) => onUpdateIntervenant(p.id, idx, "role", e.target.value)}
               >
@@ -233,6 +236,7 @@ export default function PosteCard({
               {p.intervenants.length > 1 && (
                 <button
                   style={styles.removeBtn}
+                  className="remove-btn"
                   onClick={() => onRemoveIntervenant(p.id, idx)}
                   aria-label="Retirer cet intervenant"
                 >
@@ -252,6 +256,7 @@ export default function PosteCard({
               {i.conducteur && (
                 <select
                   style={{ ...styles.input, width: "90px", padding: "4px 6px" }}
+                  className="vehicule-select"
                   value={i.typeVehicule}
                   onChange={(e) =>
                     onUpdateIntervenant(p.id, idx, "typeVehicule", e.target.value)

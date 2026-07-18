@@ -2,29 +2,10 @@ import { NextResponse } from "next/server";
 import { signerSession, DUREE_SESSION_SECONDES } from "@/lib/auth-edge";
 import { hacherMotDePasse, verifierMotDePasse } from "@/lib/auth-node";
 import { getUser, createUser, normaliserUsername, PERMISSIONS_PAR_DEFAUT } from "@/lib/users";
+import { estBloque, enregistrerEchec, reinitialiser } from "@/lib/rate-limit";
 
 const MAX_TENTATIVES = 5;
-const FENETRE_MS = 10 * 60 * 1000; // 10 minutes
-const tentativesParIp = new Map();
-
-function estBloque(ip) {
-  const entree = tentativesParIp.get(ip);
-  if (!entree) return false;
-  if (Date.now() - entree.debut > FENETRE_MS) {
-    tentativesParIp.delete(ip);
-    return false;
-  }
-  return entree.count >= MAX_TENTATIVES;
-}
-
-function enregistrerEchec(ip) {
-  const entree = tentativesParIp.get(ip);
-  if (!entree || Date.now() - entree.debut > FENETRE_MS) {
-    tentativesParIp.set(ip, { count: 1, debut: Date.now() });
-  } else {
-    entree.count += 1;
-  }
-}
+const cleTentatives = (ip) => `login-tentatives:${ip}`;
 
 // Crée le tout premier compte admin au premier login réussi avec les
 // identifiants du seed, s'il n'existe pas encore en base. Idempotent : une
@@ -50,23 +31,24 @@ async function bootstrapAdminSiNecessaire(username, password) {
 
 export async function POST(request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "inconnu";
-
-  if (estBloque(ip)) {
-    return NextResponse.json(
-      { success: false, message: "Trop de tentatives, réessayez plus tard." },
-      { status: 429 }
-    );
-  }
-
-  const { username, password } = await request.json();
-  const nom = normaliserUsername(username);
-
-  if (!nom || typeof password !== "string") {
-    enregistrerEchec(ip);
-    return NextResponse.json({ success: false }, { status: 401 });
-  }
+  const cle = cleTentatives(ip);
 
   try {
+    if (await estBloque(cle, MAX_TENTATIVES)) {
+      return NextResponse.json(
+        { success: false, message: "Trop de tentatives, réessayez plus tard." },
+        { status: 429 }
+      );
+    }
+
+    const { username, password } = await request.json();
+    const nom = normaliserUsername(username);
+
+    if (!nom || typeof password !== "string") {
+      await enregistrerEchec(cle);
+      return NextResponse.json({ success: false }, { status: 401 });
+    }
+
     let utilisateur = await bootstrapAdminSiNecessaire(nom, password);
     if (!utilisateur) {
       utilisateur = await getUser(nom);
@@ -76,11 +58,11 @@ export async function POST(request) {
       utilisateur && !utilisateur.disabled && (await verifierMotDePasse(password, utilisateur.passwordHash));
 
     if (!motDePasseValide) {
-      enregistrerEchec(ip);
+      await enregistrerEchec(cle);
       return NextResponse.json({ success: false }, { status: 401 });
     }
 
-    tentativesParIp.delete(ip);
+    await reinitialiser(cle);
     const token = await signerSession({
       u: utilisateur.username,
       r: utilisateur.role,
