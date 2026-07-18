@@ -34,12 +34,13 @@ export PDF.
 - **Export** : copie presse-papiers, envoi direct vers WhatsApp, impression /
   export PDF avec une mise en page dédiée (marges A4, en-tête Croix-Rouge,
   typographie adaptée au papier, pied de page).
-- **Accès protégé** par mot de passe partagé (cookie de session).
-  export PDF avec mise en page dédiée.
 - **Utilisable en mobilité** : mise en page à une colonne, champs et cibles
   tactiles adaptés sur téléphone (< 640px pour l'en-tête, < 480px pour les
   champs d'un poste et les boutons).
-- **Accès protégé** par mot de passe partagé (cookie de session).
+- **Comptes individuels et rôles** : chaque utilisateur a son propre
+  identifiant/mot de passe ; un rôle `admin` gère les comptes et l'accès par
+  fonctionnalité (postes, historique, modèles) des comptes `user` depuis une
+  page `/admin`.
 
 ## Prérequis
 
