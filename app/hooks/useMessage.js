@@ -9,12 +9,15 @@ import { construireMessage } from "@/lib/dps";
  * La synchronisation se fait pendant le rendu plutôt que dans un effet
  * (cf. https://react.dev/learn/you-might-not-need-an-effect).
  */
-export function useMessage(postes) {
+export function useMessage(postes, piedMessage) {
   const [message, setMessage] = useState("");
   const [desynchronise, setDesynchronise] = useState(false);
   const [dernierApercuSynchronise, setDernierApercuSynchronise] = useState("");
 
-  const apercu = useMemo(() => construireMessage(postes), [postes]);
+  const apercu = useMemo(
+    () => construireMessage(postes, piedMessage),
+    [postes, piedMessage]
+  );
 
   if (apercu !== dernierApercuSynchronise) {
     setDernierApercuSynchronise(apercu);

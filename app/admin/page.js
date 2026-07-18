@@ -5,6 +5,7 @@ import { styles } from "../components/styles";
 import UsersTable from "./components/UsersTable";
 import MoyensTable from "./components/MoyensTable";
 import ListesChampsTable from "./components/ListesChampsTable";
+import PiedMessageForm from "./components/PiedMessageForm";
 
 export const metadata = { title: "Administration — Générateur DPS" };
 
@@ -34,6 +35,7 @@ export default async function AdminPage() {
         <UsersTable />
         <MoyensTable />
         <ListesChampsTable />
+        <PiedMessageForm />
       </main>
     </div>
   );

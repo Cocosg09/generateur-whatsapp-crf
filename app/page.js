@@ -15,6 +15,7 @@ import { useListesChamps } from "./hooks/useListesChamps";
 import { useMoyens } from "./hooks/useMoyens";
 import { useHistorique } from "./hooks/useHistorique";
 import { useMessage } from "./hooks/useMessage";
+import { usePiedMessage } from "./hooks/usePiedMessage";
 import { useUtilisateur } from "./hooks/useUtilisateur";
 
 export default function Home() {
@@ -23,8 +24,9 @@ export default function Home() {
   const { listes } = useListesChamps();
   const moyens = useMoyens({ setPostes });
   const historique = useHistorique();
+  const { piedMessage } = usePiedMessage();
   const { message, setMessage, desynchronise, setDesynchronise, resynchroniser } =
-    useMessage(postes);
+    useMessage(postes, piedMessage);
   const { moi, peutHistorique, seDeconnecter } = useUtilisateur();
 
   const [copied, setCopied] = useState(false);
@@ -57,12 +59,12 @@ export default function Home() {
     // restauration exacte, sans repasser par le parsing regex du texte
     // (conservé pour les anciennes entrées, texte seul).
     const nouveauxPostes =
-      restaurerPostes(entree.postes) || parserMessage(entree.texte);
+      restaurerPostes(entree.postes) || parserMessage(entree.texte, piedMessage);
     setPostes(nouveauxPostes);
     // Si le texte enregistré avait été retouché à la main, on le restaure
     // tel quel et on marque le message comme désynchronisé du formulaire.
     setMessage(entree.texte);
-    setDesynchronise(construireMessage(nouveauxPostes) !== entree.texte);
+    setDesynchronise(construireMessage(nouveauxPostes, piedMessage) !== entree.texte);
     setSubmitAttempted(false);
     historique.setAfficher(false);
   }
