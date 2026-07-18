@@ -8,6 +8,7 @@ import PosteCard from "./components/PosteCard";
 import HistoriquePanel from "./components/HistoriquePanel";
 import MessageEditor from "./components/MessageEditor";
 import ImportOrdreMission from "./components/ImportOrdreMission";
+import QrCodeModal from "./components/QrCodeModal";
 import { useBrouillon } from "./hooks/useBrouillon";
 import { usePostes } from "./hooks/usePostes";
 import { useListesChamps } from "./hooks/useListesChamps";
@@ -29,6 +30,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [afficherImportPdf, setAfficherImportPdf] = useState(false);
+  const [afficherQrCode, setAfficherQrCode] = useState(false);
 
   function reinitialiser() {
     if (
@@ -72,11 +74,20 @@ export default function Home() {
     historique.enregistrerSiNecessaire({ texte: message, postes });
   }
 
+  function lienWhatsApp() {
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  }
+
   function envoyerWhatsApp() {
     setSubmitAttempted(true);
-    const texteEncode = encodeURIComponent(message);
-    window.open(`https://api.whatsapp.com/send?text=${texteEncode}`, "_blank");
+    window.open(lienWhatsApp(), "_blank");
     historique.enregistrerSiNecessaire({ texte: message, postes });
+  }
+
+  function ouvrirQrCode() {
+    setSubmitAttempted(true);
+    historique.enregistrerSiNecessaire({ texte: message, postes });
+    setAfficherQrCode(true);
   }
 
   function imprimer() {
@@ -125,6 +136,10 @@ export default function Home() {
           onConfirmer={postesActions.importerPostesDepuisOrdreMission}
           onClose={() => setAfficherImportPdf(false)}
         />
+      )}
+
+      {afficherQrCode && (
+        <QrCodeModal url={lienWhatsApp()} onClose={() => setAfficherQrCode(false)} />
       )}
 
       <main style={styles.main} className="dps-layout">
@@ -182,6 +197,7 @@ export default function Home() {
             onResync={resynchroniser}
             onCopier={copierMessage}
             onEnvoyer={envoyerWhatsApp}
+            onQrCode={ouvrirQrCode}
             onImprimer={imprimer}
           />
         </div>
