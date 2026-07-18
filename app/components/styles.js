@@ -301,6 +301,17 @@ export const styles = {
     cursor: "pointer",
     flex: 1,
   },
+  btnQr: {
+    background: "#fff",
+    border: "1px solid var(--whatsapp)",
+    color: "var(--whatsapp)",
+    borderRadius: "10px",
+    padding: "12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    cursor: "pointer",
+    flex: 1,
+  },
   intervenantRow: {
     display: "flex",
     flexDirection: "column",

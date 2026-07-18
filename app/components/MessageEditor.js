@@ -8,6 +8,7 @@ export default function MessageEditor({
   onResync,
   onCopier,
   onEnvoyer,
+  onQrCode,
   onImprimer,
 }) {
   return (
@@ -58,6 +59,9 @@ export default function MessageEditor({
         </button>
         <button style={styles.btnWhatsapp} onClick={onEnvoyer}>
           Envoyer sur WhatsApp
+        </button>
+        <button style={styles.btnQr} onClick={onQrCode}>
+          QR code WhatsApp
         </button>
         <button style={styles.btnOutlinePrint} onClick={onImprimer}>
           Imprimer / Exporter en PDF
