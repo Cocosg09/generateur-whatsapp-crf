@@ -12,6 +12,7 @@ import ImportOrdreMission from "./components/ImportOrdreMission";
 import { useBrouillon } from "./hooks/useBrouillon";
 import { usePostes } from "./hooks/usePostes";
 import { useModeles } from "./hooks/useModeles";
+import { useMoyens } from "./hooks/useMoyens";
 import { useHistorique } from "./hooks/useHistorique";
 import { useMessage } from "./hooks/useMessage";
 import { useUtilisateur } from "./hooks/useUtilisateur";
@@ -20,6 +21,7 @@ export default function Home() {
   const { postes, setPostes, effacerBrouillon } = useBrouillon();
   const postesActions = usePostes({ postes, setPostes });
   const modeles = useModeles({ setPostes });
+  const moyens = useMoyens({ setPostes });
   const historique = useHistorique();
   const { message, setMessage, desynchronise, setDesynchronise, resynchroniser } =
     useMessage(postes);
@@ -146,6 +148,7 @@ export default function Home() {
               index={posteIdx}
               total={postes.length}
               modeles={modeles.modeles}
+              moyens={moyens.moyens}
               preview={postesActions.preview[p.id]}
               submitAttempted={submitAttempted}
               onUpdatePoste={postesActions.updatePoste}
@@ -156,6 +159,7 @@ export default function Home() {
               onDuplicate={postesActions.dupliquerPoste}
               onRemove={postesActions.supprimerPoste}
               onChargerModele={modeles.chargerModele}
+              onChargerMoyen={moyens.chargerMoyen}
               onEnregistrerModele={modeles.enregistrerModele}
               onExtraire={postesActions.extraireDuTableau}
               onConfirmerExtraction={postesActions.confirmerExtraction}

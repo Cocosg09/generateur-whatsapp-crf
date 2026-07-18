@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { styles } from "../components/styles";
 import UsersTable from "./components/UsersTable";
+import MoyensTable from "./components/MoyensTable";
 
 export const metadata = { title: "Administration — Générateur DPS" };
 
@@ -28,8 +29,9 @@ export default async function AdminPage() {
           </Link>
         </div>
       </header>
-      <main style={styles.main}>
+      <main style={{ ...styles.main, display: "flex", flexDirection: "column", gap: "32px" }}>
         <UsersTable />
+        <MoyensTable />
       </main>
     </div>
   );

@@ -6,6 +6,7 @@ export default function PosteCard({
   index: posteIdx,
   total,
   modeles,
+  moyens,
   preview,
   submitAttempted,
   onUpdatePoste,
@@ -16,6 +17,7 @@ export default function PosteCard({
   onDuplicate,
   onRemove,
   onChargerModele,
+  onChargerMoyen,
   onEnregistrerModele,
   onExtraire,
   onConfirmerExtraction,
@@ -201,6 +203,25 @@ export default function PosteCard({
           <label style={styles.label}>
             Véhicule <span style={styles.required}>*</span>
           </label>
+          {moyens.length > 0 && (
+            <select
+              style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) onChargerMoyen(p.id, e.target.value);
+                e.target.value = "";
+              }}
+            >
+              <option value="" disabled>
+                Choisir un moyen (remplit véhicule + matériel)…
+              </option>
+              {moyens.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nom}
+                </option>
+              ))}
+            </select>
+          )}
           <input
             style={champStyle(p.vehicule)}
             placeholder="ex : Liaison RIFTER + sur place VPSP2"
