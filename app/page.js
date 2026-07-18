@@ -24,6 +24,7 @@ export default function Home() {
   const [modeles, setModeles] = useState([]);
   const [historique, setHistorique] = useState([]);
   const [afficherHistorique, setAfficherHistorique] = useState(false);
+  const [afficherImportPdf, setAfficherImportPdf] = useState(false);
   const [preview, setPreview] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [rechercheHistorique, setRechercheHistorique] = useState("");
@@ -386,6 +387,9 @@ export default function Home() {
           Générateur de message DPS
         </div>
         <div style={styles.headerActions}>
+          <button style={styles.ghostBtn} onClick={() => setAfficherImportPdf(true)}>
+            Importer un PDF
+          </button>
           <button
             style={styles.ghostBtn}
             onClick={() => setAfficherHistorique(!afficherHistorique)}
@@ -398,10 +402,15 @@ export default function Home() {
         </div>
       </header>
 
+      {afficherImportPdf && (
+        <ImportOrdreMission
+          onConfirmer={importerPostesDepuisOrdreMission}
+          onClose={() => setAfficherImportPdf(false)}
+        />
+      )}
+
       <main style={styles.main} className="dps-layout">
         <div className="form-column">
-          <ImportOrdreMission onConfirmer={importerPostesDepuisOrdreMission} />
-
           {afficherHistorique && (
             <HistoriquePanel
               historique={historique}

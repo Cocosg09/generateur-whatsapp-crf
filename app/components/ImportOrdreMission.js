@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { styles } from "./styles";
 
-export default function ImportOrdreMission({ onConfirmer }) {
+export default function ImportOrdreMission({ onConfirmer, onClose }) {
   const inputRef = useRef(null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
@@ -38,69 +38,94 @@ export default function ImportOrdreMission({ onConfirmer }) {
 
   function confirmer() {
     onConfirmer(postesDetectes);
-    setPostesDetectes(null);
-  }
-
-  function annuler() {
-    setPostesDetectes(null);
+    onClose();
   }
 
   return (
-    <section style={styles.panel} className="no-print">
-      <p style={styles.panelTitle}>Importer un ordre de mission (PDF)</p>
-      <p style={{ fontSize: "13px", color: "var(--muted)", margin: 0 }}>
-        Sélectionnez le PDF « Ordre de mission » généré par le logiciel de la
-        Croix-Rouge : le poste, les horaires, le lieu, le contact et les
-        intervenants seront proposés en aperçu avant d&apos;être ajoutés.
-      </p>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => traiterFichier(e.target.files?.[0])}
-        disabled={enCours}
-      />
-      {enCours && <p style={{ fontSize: "13px", color: "var(--muted)" }}>Lecture du PDF…</p>}
-      {erreur && <p style={{ fontSize: "13px", color: "var(--rouge)" }}>{erreur}</p>}
-
-      {postesDetectes && (
-        <div style={styles.previewBox}>
-          <p style={styles.sectionLabel}>
-            {postesDetectes.length > 1
-              ? `${postesDetectes.length} postes détectés — à confirmer`
-              : "Poste détecté — à confirmer"}
-          </p>
-          {postesDetectes.map((p, idx) => (
-            <div key={idx} style={{ marginBottom: "10px", fontSize: "13px" }}>
-              <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{p.poste || "(nom non détecté)"}</p>
-              <p style={{ margin: "0 0 4px" }}>
-                <strong>Horaires :</strong> {p.horaires || "(non détectés)"}
-              </p>
-              <p style={{ margin: "0 0 4px" }}>
-                <strong>Lieu :</strong> {p.lieuPoste || "(non détecté)"}
-              </p>
-              <p style={{ margin: "0 0 4px" }}>
-                <strong>Contact :</strong> {p.contacts || "(non détecté)"}
-              </p>
-              <ul style={{ margin: 0, paddingLeft: "18px" }}>
-                {p.intervenants.map((i, iIdx) => (
-                  <li key={iIdx}>
-                    {i.role} — {i.nom}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
-            <button style={styles.btnSecondary} onClick={confirmer}>
-              Ajouter au formulaire
-            </button>
-            <button style={{ ...styles.linkBtn, color: "var(--muted)" }} onClick={annuler}>
-              Annuler
-            </button>
-          </div>
+    <div
+      style={styles.modalOverlay}
+      className="no-print"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div style={styles.modalBox} role="dialog" aria-modal="true" aria-label="Importer un ordre de mission">
+        <div style={styles.modalHeader}>
+          <p style={styles.modalTitle}>Importer un ordre de mission (PDF)</p>
+          <button style={styles.modalCloseBtn} onClick={onClose} aria-label="Fermer">
+            ✕
+          </button>
         </div>
-      )}
-    </section>
+
+        {!postesDetectes && (
+          <>
+            <p style={{ fontSize: "13px", color: "var(--muted)", margin: 0 }}>
+              Sélectionnez le PDF « Ordre de mission » généré par le logiciel de la
+              Croix-Rouge : le poste, les horaires, le lieu, le contact et les
+              intervenants seront proposés en aperçu avant d&apos;être ajoutés.
+            </p>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => traiterFichier(e.target.files?.[0])}
+              disabled={enCours}
+              style={{ display: "none" }}
+            />
+            <button
+              type="button"
+              style={styles.fileButton}
+              onClick={() => inputRef.current?.click()}
+              disabled={enCours}
+            >
+              {enCours ? "Lecture du PDF…" : "📄 Choisir un fichier PDF"}
+              {!enCours && (
+                <span style={styles.fileButtonHint}>ou glissez-déposez le fichier ici</span>
+              )}
+            </button>
+            {erreur && <p style={{ fontSize: "13px", color: "var(--rouge)" }}>{erreur}</p>}
+          </>
+        )}
+
+        {postesDetectes && (
+          <div style={styles.previewBox}>
+            <p style={styles.sectionLabel}>
+              {postesDetectes.length > 1
+                ? `${postesDetectes.length} postes détectés — à confirmer`
+                : "Poste détecté — à confirmer"}
+            </p>
+            {postesDetectes.map((p, idx) => (
+              <div key={idx} style={{ marginBottom: "10px", fontSize: "13px" }}>
+                <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{p.poste || "(nom non détecté)"}</p>
+                <p style={{ margin: "0 0 4px" }}>
+                  <strong>Horaires :</strong> {p.horaires || "(non détectés)"}
+                </p>
+                <p style={{ margin: "0 0 4px" }}>
+                  <strong>Lieu :</strong> {p.lieuPoste || "(non détecté)"}
+                </p>
+                <p style={{ margin: "0 0 4px" }}>
+                  <strong>Contact :</strong> {p.contacts || "(non détecté)"}
+                </p>
+                <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                  {p.intervenants.map((i, iIdx) => (
+                    <li key={iIdx}>
+                      {i.role} — {i.nom}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+              <button style={styles.btnSecondary} onClick={confirmer}>
+                Ajouter au formulaire
+              </button>
+              <button style={{ ...styles.linkBtn, color: "var(--muted)" }} onClick={() => setPostesDetectes(null)}>
+                Réessayer
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
