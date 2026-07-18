@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { NextResponse } from "next/server";
+import { requirePermission } from "@/lib/session-guard";
 
 let redis;
 function getRedis() {
@@ -27,7 +28,10 @@ function estModeleValide(body) {
   );
 }
 
-export async function GET() {
+export async function GET(request) {
+  if (!(await requirePermission(request, "modeles"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const r = getRedis();
     const modeles = await lireModeles(r);
@@ -42,6 +46,9 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  if (!(await requirePermission(request, "modeles"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const body = await request.json();
     if (!estModeleValide(body)) {
@@ -70,6 +77,9 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
+  if (!(await requirePermission(request, "modeles"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const body = await request.json();
     if (!body || typeof body.id !== "string") {
