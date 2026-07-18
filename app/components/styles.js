@@ -333,7 +333,7 @@ export const styles = {
   finalBox: { display: "flex", flexDirection: "column", gap: "10px" },
   finalTextarea: {
     width: "100%",
-    minHeight: "280px",
+    minHeight: "420px",
     border: "1px solid var(--trait)",
     borderRadius: "var(--radius)",
     padding: "14px",
