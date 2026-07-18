@@ -1,29 +1,18 @@
 import { ROLES_COURANTS } from "@/lib/dps";
 import { styles } from "./styles";
 
-// Menu déroulant de suggestions (géré depuis /admin) au-dessus d'un champ
-// texte libre : choisir une valeur la recopie dans le champ, qui reste
-// modifiable à la main ensuite.
-function Suggestions({ valeurs, onChoisir }) {
+// Liste de suggestions (gérée depuis /admin) attachée à un champ texte libre
+// via l'attribut HTML `list` : le navigateur propose les valeurs qui
+// correspondent à ce qui est tapé, comme une recherche, sans imposer de
+// sélection dans un menu séparé.
+function ListeSuggestions({ id, valeurs }) {
   if (!valeurs || valeurs.length === 0) return null;
   return (
-    <select
-      style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
-      defaultValue=""
-      onChange={(e) => {
-        if (e.target.value) onChoisir(e.target.value);
-        e.target.value = "";
-      }}
-    >
-      <option value="" disabled>
-        Suggestions…
-      </option>
+    <datalist id={id}>
       {valeurs.map((v) => (
-        <option key={v} value={v}>
-          {v}
-        </option>
+        <option key={v} value={v} />
       ))}
-    </select>
+    </datalist>
   );
 }
 
@@ -163,88 +152,79 @@ export default function PosteCard({
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Heure de RDV</label>
-          <Suggestions
-            valeurs={listes.heureRdv}
-            onChoisir={(v) => onUpdatePoste(p.id, "heureRdv", v)}
-          />
           <input
             style={styles.input}
+            list={`heureRdv-${p.id}`}
             placeholder="ex : 11h30"
             value={p.heureRdv}
             onChange={(e) => onUpdatePoste(p.id, "heureRdv", e.target.value)}
           />
+          <ListeSuggestions id={`heureRdv-${p.id}`} valeurs={listes.heureRdv} />
         </div>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Lieu de RDV</label>
-          <Suggestions
-            valeurs={listes.lieuRdv}
-            onChoisir={(v) => onUpdatePoste(p.id, "lieuRdv", v)}
-          />
           <input
             style={styles.input}
+            list={`lieuRdv-${p.id}`}
             placeholder="ex : Nouveau PÔLE"
             value={p.lieuRdv}
             onChange={(e) => onUpdatePoste(p.id, "lieuRdv", e.target.value)}
           />
+          <ListeSuggestions id={`lieuRdv-${p.id}`} valeurs={listes.lieuRdv} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Lieu du poste (adresse) <span style={styles.required}>*</span>
           </label>
-          <Suggestions
-            valeurs={listes.lieuPoste}
-            onChoisir={(v) => onUpdatePoste(p.id, "lieuPoste", v)}
-          />
           <input
             style={champStyle(p.lieuPoste)}
+            list={`lieuPoste-${p.id}`}
             value={p.lieuPoste}
             onChange={(e) => onUpdatePoste(p.id, "lieuPoste", e.target.value)}
           />
+          <ListeSuggestions id={`lieuPoste-${p.id}`} valeurs={listes.lieuPoste} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Contact(s) sur place <span style={styles.required}>*</span>
           </label>
-          <Suggestions
-            valeurs={listes.contacts}
-            onChoisir={(v) => onUpdatePoste(p.id, "contacts", v)}
-          />
           <input
             style={champStyle(p.contacts)}
+            list={`contacts-${p.id}`}
             placeholder="Nom (06...) et Nom (06...)"
             value={p.contacts}
             onChange={(e) => onUpdatePoste(p.id, "contacts", e.target.value)}
           />
+          <ListeSuggestions id={`contacts-${p.id}`} valeurs={listes.contacts} />
         </div>
         <div style={{ ...styles.fieldGroup, ...styles.fullSpan }}>
           <label style={styles.label}>
             Véhicule <span style={styles.required}>*</span>
           </label>
-          {moyens.length > 0 && (
-            <select
-              style={{ ...styles.input, width: "auto", marginBottom: "6px" }}
-              defaultValue=""
-              onChange={(e) => {
-                if (e.target.value) onChargerMoyen(p.id, e.target.value);
-                e.target.value = "";
-              }}
-            >
-              <option value="" disabled>
-                Choisir un moyen (remplit véhicule + matériel)…
-              </option>
-              {moyens.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nom}
-                </option>
-              ))}
-            </select>
-          )}
           <input
             style={champStyle(p.vehicule)}
+            list={`vehicule-${p.id}`}
             placeholder="ex : Liaison RIFTER + sur place VPSP2"
             value={p.vehicule}
-            onChange={(e) => onUpdatePoste(p.id, "vehicule", e.target.value)}
+            onChange={(e) => {
+              const valeur = e.target.value;
+              const moyenCorrespondant = moyens.find(
+                (m) => m.nom.trim().toLowerCase() === valeur.trim().toLowerCase()
+              );
+              if (moyenCorrespondant) {
+                onChargerMoyen(p.id, moyenCorrespondant.id);
+              } else {
+                onUpdatePoste(p.id, "vehicule", valeur);
+              }
+            }}
           />
+          {moyens.length > 0 && (
+            <datalist id={`vehicule-${p.id}`}>
+              {moyens.map((m) => (
+                <option key={m.id} value={m.nom} />
+              ))}
+            </datalist>
+          )}
         </div>
       </div>
 

@@ -14,11 +14,12 @@ de moyens réutilisables, et export PDF.
   poste, des horaires et des intervenants, à confirmer avant application.
 - **Intervenants** : rôle, nom, statut conducteur (VL ou VPSP).
 - **Suggestions de champs** : les champs heure de RDV, lieu de RDV, lieu du
-  poste et contacts proposent un menu déroulant de valeurs fréquentes (géré
-  depuis `/admin`), tout en restant des champs texte libres.
+  poste et contacts proposent, au fur et à mesure de la saisie, les valeurs
+  fréquentes correspondantes (géré depuis `/admin`), tout en restant des
+  champs texte libres.
 - **Catalogue de moyens** : un moyen (véhicule + lot de matériel associé),
-  géré depuis `/admin`, se sélectionne sur un poste pour remplir d'un coup les
-  champs véhicule et matériel.
+  géré depuis `/admin`, se recherche dans le champ véhicule d'un poste ; le
+  sélectionner remplit d'un coup les champs véhicule et matériel.
 - **Message final éditable en direct** : le message est généré automatiquement
   depuis le formulaire (les champs non remplis sont omis), mais reste éditable
   à la main ; un bandeau propose de resynchroniser si le texte a divergé du
