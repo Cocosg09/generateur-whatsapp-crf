@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   nouveauPoste,
   nouvelIntervenant,
@@ -18,11 +20,13 @@ import ImportOrdreMission from "./components/ImportOrdreMission";
 const BROUILLON_KEY = "crf-postes-brouillon";
 
 export default function Home() {
+  const router = useRouter();
   const [postes, setPostes] = useState([nouveauPoste()]);
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
   const [modeles, setModeles] = useState([]);
   const [historique, setHistorique] = useState([]);
+  const [moi, setMoi] = useState(null);
   const [afficherHistorique, setAfficherHistorique] = useState(false);
   const [afficherImportPdf, setAfficherImportPdf] = useState(false);
   const [preview, setPreview] = useState({});
@@ -35,6 +39,11 @@ export default function Home() {
   const brouillonChargeRef = useRef(false);
 
   useEffect(() => {
+    fetch("/api/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(setMoi)
+      .catch(() => setMoi(null));
+
     fetch("/api/modeles")
       .then((res) => (res.ok ? res.json() : []))
       .then(setModeles)
@@ -379,6 +388,15 @@ export default function Home() {
     window.print();
   }
 
+  async function seDeconnecter() {
+    await fetch("/api/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  }
+
+  const peutHistorique = !moi || moi.role === "admin" || moi.permissions?.historique;
+  const peutModeles = !moi || moi.role === "admin" || moi.permissions?.modeles;
+
   return (
     <div style={styles.page}>
       <header style={styles.header} className="no-print dps-header app-header">
@@ -390,15 +408,27 @@ export default function Home() {
           <button style={styles.ghostBtn} onClick={() => setAfficherImportPdf(true)}>
             Importer un PDF
           </button>
-          <button
-            style={styles.ghostBtn}
-            onClick={() => setAfficherHistorique(!afficherHistorique)}
-          >
-            Historique
-          </button>
+          {peutHistorique && (
+            <button
+              style={styles.ghostBtn}
+              onClick={() => setAfficherHistorique(!afficherHistorique)}
+            >
+              Historique
+            </button>
+          )}
           <button style={styles.ghostBtn} onClick={reinitialiser}>
             Réinitialiser
           </button>
+          {moi?.role === "admin" && (
+            <Link style={styles.ghostBtn} href="/admin">
+              Administration
+            </Link>
+          )}
+          {moi && (
+            <button style={styles.ghostBtn} onClick={seDeconnecter}>
+              Déconnexion
+            </button>
+          )}
         </div>
       </header>
 
@@ -411,7 +441,7 @@ export default function Home() {
 
       <main style={styles.main} className="dps-layout">
         <div className="form-column">
-          {afficherHistorique && (
+          {peutHistorique && afficherHistorique && (
             <HistoriquePanel
               historique={historique}
               recherche={rechercheHistorique}
@@ -450,7 +480,7 @@ export default function Home() {
             + Ajouter un autre poste (ex : poste fixe en plus du PAPS)
           </button>
 
-          <ModelesPanel modeles={modeles} onSupprimer={supprimerModele} />
+          {peutModeles && <ModelesPanel modeles={modeles} onSupprimer={supprimerModele} />}
         </div>
 
         <div className="message-column">

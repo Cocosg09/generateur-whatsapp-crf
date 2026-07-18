@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { NextResponse } from "next/server";
+import { requirePermission } from "@/lib/session-guard";
 
 let redis;
 function getRedis() {
@@ -19,7 +20,10 @@ async function lireHistorique(r) {
   return data ? JSON.parse(data) : [];
 }
 
-export async function GET() {
+export async function GET(request) {
+  if (!(await requirePermission(request, "historique"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const r = getRedis();
     const historique = await lireHistorique(r);
@@ -34,6 +38,9 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  if (!(await requirePermission(request, "historique"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const body = await request.json();
     if (
@@ -64,6 +71,9 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
+  if (!(await requirePermission(request, "historique"))) {
+    return NextResponse.json({ message: "Accès refusé." }, { status: 403 });
+  }
   try {
     const body = await request.json();
     if (!body || typeof body.id !== "string") {
