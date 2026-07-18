@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function Login() {
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
 
     if (res.ok) {
@@ -31,12 +32,21 @@ export default function Login() {
       <h1 className="text-xl font-bold text-center">Générateur DPS</h1>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
+          type="text"
+          className="border rounded p-2 w-full"
+          placeholder="Identifiant"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoFocus
+          autoComplete="username"
+        />
+        <input
           type="password"
           className="border rounded p-2 w-full"
           placeholder="Mot de passe"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoFocus
+          autoComplete="current-password"
         />
         <button
           type="submit"
@@ -46,7 +56,7 @@ export default function Login() {
         </button>
         {error && (
           <p className="text-red-600 text-sm text-center">
-            Mot de passe incorrect
+            Identifiant ou mot de passe incorrect
           </p>
         )}
       </form>

@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
+import { verifierSession } from "./lib/auth-edge";
 
-// Comparaison en temps constant sans dépendre de node:crypto/Buffer :
-// le Middleware s'exécute sur le runtime Edge de Vercel, qui n'expose pas ces API Node.
-function correspondEnTempsConstant(a, b) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return diff === 0;
-}
+export async function middleware(request) {
+  const cookie = request.cookies.get("session");
+  const session = await verifierSession(cookie?.value);
 
-export function middleware(request) {
-  const cookie = request.cookies.get("auth");
-  const expected = process.env.APP_PASSWORD;
-
-  if (expected && cookie?.value && correspondEnTempsConstant(cookie.value, expected)) {
-    return NextResponse.next();
+  if (session) {
+    const headers = new Headers(request.headers);
+    headers.set("x-user", session.u);
+    headers.set("x-role", session.r);
+    return NextResponse.next({ request: { headers } });
   }
 
   const loginUrl = new URL("/login", request.url);
